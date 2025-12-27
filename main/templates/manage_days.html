@@ -1,643 +1,920 @@
 <!DOCTYPE html>
 {% load availability_tags %}
-<html>
+<html lang="en">
 <head>
-    <title>Manage Days</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Days - Dance Scheduler</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
-            background-color: #2b2b2b !important;
-            color: #dcdcdc;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e4e4e7;
+            min-height: 100vh;
         }
 
         .header {
-            position: relative;
+            background: linear-gradient(135deg, #2f2f3f 0%, #252575 100%);
+            padding: 24px 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
             display: flex;
             align-items: center;
-            justify-content: center;
-            background-color: #dc3545;
-            padding: 15px;
-            color: white;
+            justify-content: space-between;
         }
 
         .header h1 {
-            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.5px;
         }
 
         .header-nav-btn {
-            position: absolute;
-            right: 20px;
-            background-color: rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
             color: white;
-            padding: 8px 14px;
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 4px;
+            padding: 10px 20px;
+            border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .header-nav-btn:hover {
-            background-color: rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
         }
 
-        .groups-container {
-            overflow: hidden;
-            position: relative;
-        }
-
-        .groups-slider {
-            display: flex;
-            transition: transform 0.3s ease;
-            overflow-x: hidden;
-        }
-        
         .main-container {
-            overflow-x: hidden;
+            padding: 32px;
+            max-width: 1600px;
+            margin: 0 auto;
         }
 
-        .groups-page {
-            min-width: 100%;
+        .slider-container {
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .top-bar {
             display: flex;
-            gap: 20px;
-            align-items: flex-start;
-            justify-content: space-around;
-            padding: 0 20px;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
         }
 
-        /* Days slider/page mirror groups styling to keep visuals consistent */
+        .add-day-form {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .add-day-form input[type="text"] {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: #e4e4e7;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 15px;
+            min-width: 250px;
+            /* Let input grow but not exceed container */
+            flex: 1;
+            max-width: 100%;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .add-day-form input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .add-day-form input[type="text"]::placeholder {
+            color: #71717a;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #2f2f3f 0%, #252575 100%);
+            color: #e4e4e7;
+            padding: 12px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:not([aria-disabled="true"]):hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn[aria-disabled="true"] {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .nav-buttons span {
+            color: #a1a1aa;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
         .days-slider {
             display: flex;
-            transition: transform 0.3s ease;
-        }
-        .days-page {
-            min-width: 100%;
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
-            justify-content: space-around;
-            padding: 0 20px;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .group-card {
-            flex: 1 1 auto;
-            background-color: #3a3a3a;
-            margin: 20px 0;
-            padding: 20px;
-            border-radius: 8px;
-            min-width: 300px;
-            max-width: calc(50% - 20px);
+        .days-page {
+            width: 100%;
+            flex: 0 0 100%;
+            flex-shrink: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
         }
 
         .day-card {
-            flex: 1 1 auto;
-            background-color: #3a3a3a;
-            margin: 20px 0;
-            padding: 20px;
-            border-radius: 8px;
-            min-width: 300px;
-            max-width: calc(50% - 20px);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
         }
 
-        .group-card ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
+        .day-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         .day-card ul {
             list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .group-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .group-header h3 {
-            margin: 0;
         }
 
         .day-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         .day-header h3 {
-            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            cursor: text;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: background 0.2s ease;
         }
 
-        .group-header h3 {
-            margin: 0;
-        }
-
-        /* Top bar layout */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 200px;
-            padding: 20px;
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        /* Add Group form styles */
-        .add-day-form {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin: 0;
-        }
-
-        .add-day-form input[type="text"] {
-            flex: 0;
-            background-color: #2b2b2b;
-            border: 1px solid #555;
-            color: #dcdcdc;
-            padding: 8px 12px;
-            border-radius: 4px;
-            min-width: 18ch; /* minimal visible width */
-            max-width: 60ch; /* cap to avoid breaking layout */
-        }
-
-        /* Auto-width behavior using ch units (reinforced by JS) */
-        .auto-width-input {
-            width: auto;
-        }
-
-        .btn-add {
-            background-color: #0d6efd;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .btn-add:hover {
-            background-color: #0b5ed7;
+        .day-header h3:hover {
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .btn-delete {
-            background-color: #dc3545;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: white;
-            padding: 5px 15px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
-            text-decoration: none;
-            font-size: 14px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
         .btn-delete:hover {
-            background-color: #c82333;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
         }
 
-        .nav-btn {
-            padding: 10px 20px;
-            background-color: #0d6efd;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
+        .time-window {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin: 20px 0;
         }
 
-        .nav-btn:disabled {
-            background-color: #555;
-            cursor: not-allowed;
-        }
-        .main-container { padding: 0 20px 20px;}
-        .couple-list {
-            background-color: #2b2b2b;
-            border-radius: 4px;
-            padding: 10px;
-            margin-top: 20px;
-        }
-        .couple-item {
-            background-color: #3a3a3a;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .time-block {
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 16px;
         }
 
-        /* Drag and drop styles */
-        .couple-item {
-            cursor: move;
-            transition: opacity 0.2s, transform 0.2s;
-        }
-
-        .couple-item.dragging {
-            opacity: 0.5;
-            transform: scale(0.95);
-        }
-
-        .day-card.drag-over {
-            background-color: #4a4a4a;
-            border: 2px dashed #1e7db8;
-        }
-
-        .couple-list.drag-over {
-            background-color: #3a3a3a;
-        }
-
-        <!-- add couple-->
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            align-items: center;
-        }
-
-        .form-row .form-group {
-            flex: 1;
-            margin-bottom: 0;
-        }
-        
-        input[type="text"] {
-            background-color: #2b2b2b;
-            min-width: 160px;
-            border: 1px solid #555;
-            color: #dcdcdc;
-            padding: 8px;
-            border-radius: 4px;
-            width: 100%;
-            box-sizing: border-box;
-            flex: auto;
-        }
-
-        input[name="min_duration"] {
-            max-width: 80px;
-            min-width: 40px;
-            flex: 0 !important;
-        }
-        .form-row button {
-            background-color: #0d6efd;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        .form-row button:hover {
-            background-color: #0b5ed7;
-        }
-        /* Toast container */
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 9999;
-        }
-        
-        .toast {
-            min-width: 250px;
-            background-color: #3a3a3a;
-            border-radius: 4px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        .time-title {
+            color: #93c5fd;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             margin-bottom: 10px;
         }
-        
-        .toast-header {
-            background-color: #2b2b2b;
-            color: #dcdcdc;
-            border-bottom: 1px solid #555;
-            padding: 8px 12px;
-            border-radius: 4px 4px 0 0;
+
+        .time-input-wrap {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 10px;
+            justify-content: center;
         }
-        
-        .toast-body {
-            padding: 12px;
-            color: #dcdcdc;
-        }
-        
-        .toast-warning .toast-header {
-            background-color: #856404;
-            color: #ffc107;
-            border-bottom-color: #ffc107;
-        }
-        
-        .toast-success .toast-header {
-            background-color: #155724;
-            color: #28a745;
-            border-bottom-color: #28a745;
-        }
-        
-        .toast .btn-close {
-            background-color: transparent;
-            border: none;
-            color: inherit;
-            font-size: 20px;
-            cursor: pointer;
-            opacity: 0.7;
-        }
-        
-        .toast .btn-close:hover {
-            opacity: 1;
-        }
-        .toast-warning .toast-header {
-            background-color: #856404;
-            color: #ffc107;
-            border-bottom-color: #ffc107;
-        }   
-        input[name="dance_class_stt"],
-        input[name="dance_class_lat"] {
-            min-width: 80px;
-            flex: 1;
-        }
-        .time-window { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 12px 0; }
-    .time-block { background: #3a3a3a; border-radius: 8px; padding: 12px 14px; text-align: center; }
-    .time-title { color: #dcdcdc; font-weight: 700; margin: 0 0 8px; }
-    .time-input-wrap { display: flex; align-items: center; gap: 12px; justify-content: center; }
-    .time-input-wrap input[type="time"] {
-    background: #2b2b2b; border: 1px solid #555; color: #dcdcdc;
-    border-radius: 6px; padding: 10px 12px; width: 140px; text-align: center;
-    }
-    .time-buttons { display: flex; gap: 6px; }
-    .time-buttons .btn { padding: 8px 12px; }
 
-        /* Trainer UI shared styles */
-        .trainer-list {
-            background-color: #2b2b2b;
+        .time-input-wrap input[type="time"] {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: #e4e4e7;
             border-radius: 8px;
-            padding: 10px;
-            margin-top: 12px;
+            padding: 10px 14px;
+            font-size: 15px;
+            font-weight: 600;
+            width: 130px;
+            text-align: center;
+            font-family: 'Inter', monospace;
         }
+
+        .time-input-wrap input[type="time"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .time-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .time-buttons .btn {
+            padding: 4px 10px;
+            font-size: 12px;
+            background: rgba(59, 130, 246, 0.2);
+            border: none;
+            color: #93c5fd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .time-buttons .btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+        }
+
+        .trainer-list {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+
         .trainer-card {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            background-color: #3a3a3a;
-            border-radius: 8px;
-            padding: 10px 12px;
-            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
         }
+
+        .trainer-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
         .trainer-meta {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
         }
-        .avatar-sm {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background-color: #1e7db8;
-            color: white;
+
+        .trainer-name {
+            font-weight: 600;
+            color: #fff;
+            font-size: 15px;
+        }
+
+        .focus-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .focus-stt {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .focus-lat {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .focus-sl {
+            background: rgba(168, 85, 247, 0.2);
+            color: #c4b5fd;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .time-chip {
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a1a1aa;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: 'Inter', monospace;
+        }
+
+        .lesson-chip {
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #86efac;
+            font-size: 12px;
+            font-weight: 500;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 13px;
-        }
-        .trainer-name { font-weight: 600; color: #dcdcdc; }
-        .focus-badge {
-            padding: 4px 8px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-        .focus-stt { background-color: #0d6efd33; color: #7ab8ff; border: 1px solid #0d6efd55; }
-        .focus-lat { background-color: #dc354533; color: #ff9aa7; border: 1px solid #dc354555; }
-        .focus-sl  { background-color: #6f42c133; color: #c5a7ff; border: 1px solid #6f42c155; }
-        .time-chip {
-            padding: 4px 8px;
-            border-radius: 6px;
-            background-color: #2b2b2b;
-            border: 1px solid #555;
-            color: #bdbdbd;
-            font-size: 12px;
-        }
-        .lesson-chip {
-            padding: 4px 8px;
-            border-radius: 6px;
-            background-color: #2b2b2b;
-            border: 1px solid #555;
-            color: #bdbdbd;
-            font-size: 12px;
-        }
-        .assign-row {
-            display: flex;
-            align-items: center;
             gap: 8px;
-            flex-wrap: wrap; /* allow wrapping so button can move below */
-            margin-top: 20px; /* match couple-list spacing */
-            width: 100%; /* span full day-card content width */
-            box-sizing: border-box;
-            background-color: #2b2b2b; /* match couple-list background */
-            border-radius: 4px; /* match couple-list radius */
-            padding: 10px; /* match couple-list padding */
-            justify-content: flex-start; /* avoid pushing items out */
         }
-        .assign-row .assign-fields {
+
+        .btn-close {
+            background: rgba(239, 68, 68, 0.2);
+            border: none;
+            color: #fca5a5;
+            border-radius: 4px;
+            padding: 2px 6px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-close:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .couple-list {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+
+        .couple-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            transition: all 0.2s ease;
+        }
+
+        .couple-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .couple-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.98);
+        }
+
+        .couple-item > div {
             display: flex;
             align-items: center;
-            gap: 6px;
-            flex: 1 1 auto;
-            flex-wrap: nowrap; /* keep select + both times on one line */
-            min-width: 0; /* allow content to shrink */
-            overflow-x: auto; /* prevent wrap; allow scroll if too narrow */
+            gap: 12px;
+            flex-wrap: wrap;
         }
-        .assign-row .form-select {
-            background-color: #2b2b2b;
-            border: 1px solid #555;
-            color: #dcdcdc;
-            display: inline-block;
-            min-width: 150px; /* tighter minimum to help fit */
-            flex: 1 1 100px; /* grow/shrink within row */
-            white-space: nowrap;
-        }
-        .assign-row input[type="time"] {
-            background-color: #2b2b2b;
-            border: 1px solid #555;
-            color: #dcdcdc;
-            width: 100px;
-            flex: 0 1 100px; /* narrower to keep on one line */
-        }
-        .assign-row .btn {
-            flex: 1 0 100%; /* force to next row and span width */
-            width: 100%;    
-            margin-top: 6px; /* spacing from inputs */
-        }
-        .assign-row .small-label { white-space: nowrap; color: #999; font-size: 12px; margin: 0 6px; }
 
-        /* Responsive tweaks for tablets and phones */
-        @media (max-width: 1300px) {
+        .editable-couple {
+            font-weight: 600;
+            color: #fff;
+            font-size: 15px;
+        }
+
+        .editable-couple:hover,
+        .editable-time-duration:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 2px 6px;
+            margin: -2px -6px;
+        }
+
+        .assign-row {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .assign-fields {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .assign-fields input[type="text"],
+        .assign-fields input[type="time"],
+        .assign-fields select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: #e4e4e7;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .assign-fields input[type="text"]:focus,
+        .assign-fields input[type="time"]:focus,
+        .assign-fields select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .small-label {
+            color: #71717a;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .assign-row button,
+        .form-row button {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .assign-row button:hover,
+        .form-row button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 400px;
+        }
+
+        .toast {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .toast-body {
+            padding: 16px;
+            color: #e4e4e7;
+            font-size: 14px;
+        }
+
+        .toast-success .toast-header {
+            background: rgba(34, 197, 94, 0.2);
+            border-bottom-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .toast-success strong {
+            color: #86efac;
+        }
+
+        .toast-warning .toast-header {
+            background: rgba(234, 179, 8, 0.2);
+            border-bottom-color: rgba(234, 179, 8, 0.3);
+        }
+
+        .toast-warning strong {
+            color: #fde047;
+        }
+
+        .day-card.drag-over {
+            background-color: rgba(59, 130, 246, 0.15);
+            border: 2px dashed #3b82f6;
+        }
+
+        .couple-list.drag-over {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+
+        /* Added comprehensive responsive styles for all screen sizes */
+        
+        /* Small laptops (1366px and below) */
+        @media (max-width: 1366px) {
+            .main-container {
+                padding: 24px;
+            }
+            
+            .days-page {
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 20px;
+            }
+            
+            .day-card {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+
+        @media (max-width: 1325px) {
+            .days-page {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+
+        /* Tablets (1024px and below) */
+        @media (max-width: 1024px) {
+            .main-container {
+                padding: 20px;
+            }
+            
+            .top-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .nav-buttons {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .time-window {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .days-page {
+                grid-template-columns: 1fr;
+            }
+            
+        }
+
+        /* Mobile devices (768px and below) */
+        @media (max-width: 768px) {
+            .header {
+                padding: 12px 16px;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+                text-align: center;
+            }
+            
+            .header-nav-btn {
+                text-align: center;
+                padding: 12px;
+            }
+
+            .main-container {
+                padding: 16px;
+            }
+            
+            .day-card {
+                padding: 16px;
+            }
+            
+            .day-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+            }
+            
+            .day-header h3 {
+                font-size: 18px;
+                text-align: center;
+            }
+            
             .time-window {
                 grid-template-columns: 1fr;
             }
-        }
-        @media (max-width: 992px) {
-            .top-bar {
-                flex-direction: row;
-                align-items: flex-start;
-                gap: 100px;
-                padding: 16px;
+            
+            .time-block {
+                padding: 12px;
             }
-            .add-day-form {
-                width: 100%;
-                flex-wrap: wrap;
-            }
-            .add-day-form input[type="text"] {
-                flex: 1 1 auto;
-                min-width: 0;
-            }
-            .btn-add {
-                width: 100%;
-            }
-            .nav-buttons {
-                width: 35%;
-                justify-content: space-between;
-                flex-wrap: wrap;
+            
+            .time-input-wrap {
+                flex-direction: column;
                 gap: 8px;
             }
-            .nav-buttons .nav-btn {
-                flex: 1 1 48%;
-                text-align: center;
-            }
-            .nav-buttons span {
+            
+            .time-input-wrap input[type="time"] {
                 width: 100%;
-                text-align: center;
             }
-            .days-page {
+            
+            .time-buttons {
+                flex-direction: row;
+                width: 100%;
+            }
+            
+            .time-buttons .btn {
+                flex: 1;
+            }
+            
+            .trainer-card {
                 flex-direction: column;
-                padding: 0 10px;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 12px;
             }
-            .day-card {
-                max-width: 100%;
+            
+            .trainer-meta {
                 width: 100%;
+                gap: 8px;
+            }
+            
+            .trainer-card form {
+                width: 100%;
+            }
+            
+            .btn-delete {
+                width: 100%;
+                padding: 10px;
+            }
+            
+            .couple-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 12px;
+            }
+            
+            .couple-item > div {
+                width: 100%;
+                gap: 8px;
+            }
+            
+            .couple-item form {
+                width: 100%;
+            }
+            
+            .assign-fields {
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            /* Keep field groups together */
+            .field-group,
+            .time-group {
+                flex-shrink: 0;
+                min-width: auto;
+            }
+            
+            /* Main inputs (first child) take full width */
+            .assign-fields > input[type="text"]:first-child,
+            .assign-fields > select {
+                width: 100%;
+                flex-basis: 100%;
+            }
+            
+            /* Compact field groups stay inline */
+            .field-group input[type="text"] {
+                min-width: 70px;
+                max-width: 90px;
+            }
+            
+            .time-group input[type="time"] {
+                min-width: 110px;
+                flex: 1;
+            }
+
+            .add-day-form{
+                width: 100%;
+            }
+            
+            .add-day-form input[type="text"] {
+                min-width: 0;
             }
         }
 
+        /* Small mobile (576px and below) */
         @media (max-width: 576px) {
-            body { font-size: 14px; }
-            .header { padding: 12px; }
-            .header h1 { font-size: 1.25rem; text-align: center; }
-            .header-nav-btn { position: static; display: inline-block; margin-top: 8px; }
-            .top-bar { padding: 12px; }
-            .days-page { gap: 12px; }
-            .day-card { padding: 14px; }
-            .form-row { flex-direction: column; align-items: stretch; }
-            .form-row button { width: 100%; }
-            input[type="text"] { min-width: 100%; font-size: 16px; }
-            .assign-row { padding: 8px; }
-            .assign-row .form-select { min-width: 0; width: 100%; }
-            .assign-row input[type="time"] { width: 100%; }
-            .assign-row .btn { margin-top: 8px; }
-            .time-input-wrap { flex-direction: column; }
+            .header h1 {
+                font-size: 18px;
+            }
             
+            .day-header h3 {
+                font-size: 16px;
+            }
+            
+            .trainer-name {
+                font-size: 14px;
+            }
+            
+            .focus-badge {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+            
+            .time-chip {
+                font-size: 11px;
+                padding: 4px 8px;
+            }
+            
+            .lesson-chip {
+                font-size: 11px;
+                padding: 4px 8px;
+            }
+            
+            .nav-btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+            
+            .btn-add {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            
+            .time-title {
+                font-size: 12px;
+            }
+            
+            .add-day-form input[type="text"] {
+                font-size: 14px;
+                padding: 10px 14px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Manage the Days</h1>
+        <h1>Manage Days</h1>
         <a href="{% url 'calendar_view' %}" class="header-nav-btn">← Back to Calendar</a>
     </div>
-     <!-- Toast Notifications -->
+
     <div class="toast-container" aria-live="polite" aria-atomic="true">
         {% if error_message %}
-        <div class="toast toast-warning" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast toast-warning" role="alert">
             <div class="toast-header">
-                <strong class="me-auto">⚠ Warning</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                <strong>⚠ Warning</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast">×</button>
             </div>
-            <div class="toast-body">
-                {{ error_message }}
-            </div>
+            <div class="toast-body">{{ error_message }}</div>
         </div>
         {% endif %}
         
         {% if success_message %}
-        <div class="toast toast-success" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast toast-success" role="alert">
             <div class="toast-header">
-                <strong class="me-auto">Success</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                <strong>✓ Success</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast">×</button>
             </div>
-            <div class="toast-body">
-                {{ success_message }}
-            </div>
+            <div class="toast-body">{{ success_message }}</div>
         </div>
         {% endif %}
         
         {% if messages %}
         {% for message in messages %}
-        <div class="toast toast-{{ message.tags }}" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast toast-{{ message.tags }}" role="alert">
             <div class="toast-header">
-                <strong class="me-auto">{% if message.tags == 'success' %}✓ Success{% elif message.tags == 'warning' %}⚠ Warning{% else %}Info{% endif %}</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                <strong>{% if message.tags == 'success' %}✓ Success{% elif message.tags == 'warning' %}⚠ Warning{% else %}Info{% endif %}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast">×</button>
             </div>
-            <div class="toast-body">
-                {{ message }}
-            </div>
+            <div class="toast-body">{{ message }}</div>
         </div>
         {% endfor %}
         {% endif %}
     </div>
+
     <div class="main-container">
         <div class="top-bar">
-            <div class="fomr-row">
             <form method="POST" action="{% url 'add_day' %}" class="add-day-form">
                 {% csrf_token %}
-                <input type="text" name="day_name" class="auto-width-input" placeholder="New Day Name" required>
+                <input type="text" name="day_name" placeholder="New Day Name" required>
                 <button type="submit" class="btn-add">Add Day</button>
             </form>
-            </div>
+
             <div class="nav-buttons">
-                     <a id="prev-page"
-                         class="nav-btn{% if not page_obj.has_previous %} disabled{% endif %}"
-                         {% if page_obj.has_previous %}
-                         href="?page={{ page_obj.previous_page_number }}"
-                         data-target-page="{{ page_obj.previous_page_number }}"
-                         {% else %}
-                         aria-disabled="true" style="pointer-events: none; background-color: gray; text-decoration: none; cursor: default; opacity: 0.6"
-                         {% endif %}>← Previous</a>
+                <a id="prev-page"
+                   class="nav-btn{% if not page_obj.has_previous %} disabled{% endif %}"
+                   {% if page_obj.has_previous %}
+                   href="?page={{ page_obj.previous_page_number }}"
+                   data-target-page="{{ page_obj.previous_page_number }}"
+                   {% else %}
+                   aria-disabled="true" style="pointer-events: none;"
+                   {% endif %}>← Previous</a>
                 <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-                     <a id="next-page"
-                         class="nav-btn{% if not page_obj.has_next %} disabled{% endif %}"
-                         {% if page_obj.has_next %}
-                         href="?page={{ page_obj.next_page_number }}"
-                         data-target-page="{{ page_obj.next_page_number }}"
-                         {% else %}
-                         aria-disabled="true" style="pointer-events: none; background-color: gray; text-decoration: none; cursor: default; opacity: 0.6"
-                         {% endif %}>Next →</a>
+                <a id="next-page"
+                   class="nav-btn{% if not page_obj.has_next %} disabled{% endif %}"
+                   {% if page_obj.has_next %}   
+                   href="?page={{ page_obj.next_page_number }}"
+                   data-target-page="{{ page_obj.next_page_number }}"
+                   {% else %}
+                   aria-disabled="true" style="pointer-events: none;"
+                   {% endif %}>Next →</a>
             </div>
         </div>
-        <div id="days-slider" class="days-slider">
-            <div class="days-page" data-page="{{ page_obj.number }}">
-                        {% include 'partials/days_groups_page.html' %}
+
+        <div class="slider-container">
+            <div id="days-slider" class="days-slider">
+                <div class="days-page" data-page="{{ page_obj.number }}">
+                    {% include 'partials/days_groups_page.html' %}
+                </div>
             </div>
         </div>
     </div>
-    
-    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Auto-adjust the width of the group input based on its content
@@ -1197,114 +1474,51 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
     
-    // inline editing for trainer start/end time
-    (function() {
-        const spans = document.querySelectorAll('.editable-start-time');
-        const csrftoken = (function() {
-            const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
-            return el ? el.value : null;
-        })();
-        function saveChange(span) {
-            const trainerId = span.getAttribute('data-trainer-id');
-            const dayId = span.getAttribute('data-day-id');
-            const newStartTime = span.textContent.trim();
-            const original = span.getAttribute('data-original');
-
-            if (!trainerId || newStartTime === original || newStartTime.length === 0) {
-                span.textContent = original;
-                return;
-            }
-            span.classList.add('saving');
-            fetch(`/trainers/update_trainer_time/${trainerId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken || '',
-                },
-                body: JSON.stringify({start_time: newStartTime, day_id: dayId})
-            })
-            .then(res => {
-                if (!res.ok) throw new Error('Failed to save');
-                return res.json();
-            })
-            .then(data => {
-                span.setAttribute('data-original', data.start_time);
-            })
-            .catch(() => {
-                // revert on error
-                span.textContent = original;
-                alert('Could not save change.');
-            })
-            .finally(() => {
-                span.classList.remove('saving');
-            })
-
+     // Inline editing for trainer start time
+    scopeEl.querySelectorAll('.editable-start-time').forEach(span => {
+      span.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); span.blur(); } });
+      span.addEventListener('blur', () => {
+        const trainerId = span.getAttribute('data-trainer-id');
+        const dayId = span.getAttribute('data-day-id');
+        const newStartTime = span.textContent.trim();
+        const original = span.getAttribute('data-original');
+        if (!trainerId || newStartTime === original || newStartTime.length === 0) {
+          span.textContent = original;
+          return;
         }
-
-        spans.forEach(span => {
-            span.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    span.blur();
-                }
-            });
-            span.addEventListener('blur', () => saveChange(span));
+        fetch(`/trainers/update_trainer_time/${trainerId}/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken || '' },
+          body: JSON.stringify({ start_time: newStartTime, day_id: dayId })
         })
-    })();
+        .then(res => { if (!res.ok) throw new Error('Failed'); return res.json(); })
+        .then(data => span.setAttribute('data-original', data.start_time))
+        .catch(() => { span.textContent = original; alert('Could not save change.'); });
+      });
+    });
 
-    (function() {
-        const spans = document.querySelectorAll('.editable-end-time');
-        const csrftoken = (function() {
-            const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
-            return el ? el.value : null;
-        })();
-        function saveChange(span) {
-            const trainerId = span.getAttribute('data-trainer-id');
-            const dayId = span.getAttribute('data-day-id');
-            const newEndTime = span.textContent.trim();
-            const original = span.getAttribute('data-original');
-            
-            if (!trainerId || newEndTime === original || newEndTime.length === 0) {
-                span.textContent = original;
-                return;
-            }
-
-            span.classList.add('saving');
-            fetch(`/trainers/update_trainer_time/${trainerId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken' : csrftoken || '',
-                },
-                body: JSON.stringify({end_time: newEndTime, day_id: dayId})
-            })
-            .then(res => {
-                if (!res.ok) throw new Error('Failed to save');
-                return res.json();
-            })
-            .then(data => {
-                span.setAttribute('data-original', data.end_time);
-            })
-            .catch(() => {
-                // revert on error
-                span.textContent = original;
-                alert('Could not save change.');
-            })
-            .finally(() => {
-                span.classList.remove('saving');
-            })
-
+    // Inline editing for trainer end time
+    scopeEl.querySelectorAll('.editable-end-time').forEach(span => {
+      span.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); span.blur(); } });
+      span.addEventListener('blur', () => {
+        const trainerId = span.getAttribute('data-trainer-id');
+        const dayId = span.getAttribute('data-day-id');
+        const newEndTime = span.textContent.trim();
+        const original = span.getAttribute('data-original');
+        if (!trainerId || newEndTime === original || newEndTime.length === 0) {
+          span.textContent = original;
+          return;
         }
-        spans.forEach(span => {
-            span.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    span.blur();   
-                }
-            });
-            span.addEventListener('blur', () => saveChange(span));
+        fetch(`/trainers/update_trainer_time/${trainerId}/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken || '' },
+          body: JSON.stringify({ end_time: newEndTime, day_id: dayId })
         })
-    })();
+        .then(res => { if (!res.ok) throw new Error('Failed'); return res.json(); })
+        .then(data => span.setAttribute('data-original', data.end_time))
+        .catch(() => { span.textContent = original; alert('Could not save change.'); });
+      });
+    });
     // Form validation for adding couples to days
     scopeEl.querySelectorAll('.add-to-day-form').forEach(form => {
       form.addEventListener('submit', function(e) {
@@ -1523,18 +1737,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Initial binding for current page
   bindAllHandlers(document.querySelector('.days-page'));
-  
-  // Also bind time handlers globally on initial load
-  document.querySelectorAll('[id^="start-"], [id^="end-"]').forEach(input => {
-    const dayId = input.id.split('-')[1];
-    input.addEventListener('change', () => saveDayTime(dayId));
-  });
-  
-  document.querySelectorAll('.time-step').forEach(btn => {
-    btn.addEventListener('click', () => {
-      adjustTime(btn.dataset.target, parseInt(btn.dataset.delta, 10));
-    });
-  });
 });
 
 function getCookie(name) {

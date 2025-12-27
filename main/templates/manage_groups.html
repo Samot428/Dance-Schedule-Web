@@ -1,430 +1,463 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Manage Groups</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Groups - Dance Scheduler</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
-            background-color: #2b2b2b !important;
-            color: #dcdcdc;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e4e4e7;
+            min-height: 100vh;
+        }
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
         }
 
         .header {
-            position: relative;
+            background: linear-gradient(135deg, #2f2f3f 0%, #252575 100%);
+            padding: 24px 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
             display: flex;
             align-items: center;
-            justify-content: center;
-            background-color: #dc3545;
-            padding: 15px;
-            color: white;
+            justify-content: space-between;
         }
 
         .header h1 {
-            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.5px;
         }
 
         .header-nav-btn {
-            position: absolute;
-            right: 20px;
-            background-color: rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
             color: white;
-            padding: 8px 14px;
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 4px;
+            padding: 10px 20px;
+            border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .header-nav-btn:hover {
-            background-color: rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
         }
 
-        .groups-container {
+        .main-container {
+            padding: 32px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .slider-container {
             overflow: hidden;
-            position: relative;
+            width: 100%;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .add-group-form {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            
+        }
+
+        .add-group-form input[type="text"] {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: #e4e4e7;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 15px;
+            min-width: 250px;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            /* Let input grow but not exceed container */
+            flex: 1;
+            max-width: 100%;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .add-group-form input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            /* Prevent button from shrinking */
+            flex-shrink: 0;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #2f2f3f 0%, #252575 100%);
+            color: #e4e4e7;
+            padding: 12px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn.disabled {
+            opacity: 0.4;
+            cursor: default;
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.02);
+            border-color: rgba(255, 255, 255, 0.08);
+            transform: none;
         }
 
         .groups-slider {
             display: flex;
-            transition: transform 0.3s ease;
-        }
-        
-        .main-container {
-            overflow: hidden;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .groups-page {
-            min-width: 100%;
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
-            justify-content: space-around;
-            padding: 0 20px;
+            width: 100%;
+            flex: 0 0 100%;
+            flex-shrink: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+            gap: 24px;
         }
 
         .group-card {
-            flex: 1 1 auto;
-            background-color: #3a3a3a;
-            margin: 20px 0;
-            padding: 20px;
-            border-radius: 8px;
-            min-width: 300px;
-            max-width: calc(50% - 20px);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            /* Ensure cards don't overflow */
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .group-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         .group-card ul {
             list-style: none;
-            padding: 0;
-            margin: 0;
         }
 
         .group-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         .group-header h3 {
-            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            cursor: text;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: background 0.2s ease;
         }
 
-        /* Top bar layout */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 200px;
-            padding: 20px;
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        /* Add Group form styles */
-        .add-group-form {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin: 0;
-        }
-
-        .add-group-form input[type="text"] {
-            flex: 0;
-            background-color: #2b2b2b;
-            border: 1px solid #555;
-            color: #dcdcdc;
-            padding: 8px 12px;
-            border-radius: 4px;
-            min-width: 18ch; /* minimal visible width */
-            max-width: 60ch; /* cap to avoid breaking layout */
-        }
-        /* Auto-width behavior using ch units (reinforced by JS) */
-        .auto-width-input {
-            width: auto;
-        }
-
-        .btn-add {
-            background-color: #0d6efd;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .btn-add:hover {
-            background-color: #0b5ed7;
+        .group-header h3:hover {
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .btn-delete {
-            background-color: #dc3545;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: white;
-            padding: 5px 15px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
-            text-decoration: none;
-            font-size: 14px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
         .btn-delete:hover {
-            background-color: #c82333;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
         }
 
-        .nav-btn {
-            padding: 10px 20px;
-            background-color: #0d6efd;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        .nav-btn:disabled {
-            background-color: #555;
-            cursor: not-allowed;
-        }
-        .main-container { padding: 0 20px 20px;}
         .couple-list {
-            background-color: #2b2b2b;
-            border-radius: 4px;
-            padding: 10px;
-            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
         }
+
         .couple-item {
-            background-color: #3a3a3a;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border-radius: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: move;
+            transition: all 0.2s ease;
         }
 
-        /* Drag and drop styles */
-        .couple-item {
-            cursor: move;
-            transition: opacity 0.2s, transform 0.2s;
+        .couple-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
         .couple-item.dragging {
             opacity: 0.5;
-            transform: scale(0.95);
+            transform: scale(0.98);
+        }
+
+        .couple-item > div {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .editable-couple {
+            font-weight: 600;
+            color: #fff;
+            font-size: 15px;
+        }
+
+        .assign-row {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .assign-fields {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .assign-fields input[type="text"] {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: #e4e4e7;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 150px;
+            /* Allow inputs to shrink on mobile */
+            flex: 1 1 auto;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .assign-fields input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .small-label {
+            color: #71717a;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .assign-row button {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .assign-row button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
         }
 
         .group-card.drag-over {
-            background-color: #4a4a4a;
-            border: 2px dashed #1e7db8;
+            background-color: rgba(59, 130, 246, 0.15);
+            border: 2px dashed #3b82f6;
         }
 
         .couple-list.drag-over {
-            background-color: #3a3a3a;
+            background-color: rgba(59, 130, 246, 0.1);
         }
 
-        /* add couple */
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            align-items: center;
-        }
-
-        .form-row .form-group {
-            flex: 1;
-            margin-bottom: 0;
-        }
-        
-        input[type="text"] {
-            background-color: #2b2b2b;
-            min-width: 200px;
-            border: 1px solid #555;
-            color: #dcdcdc;
-            padding: 8px;
-            border-radius: 4px;
-            width: 100%;
-            box-sizing: border-box;
-            flex: auto;
-        }
-
-        input[name="dance_class_stt"] {
-            min-width: 60px;
-            max-width: 100px;
-        }
-        
-        input[name="dance_class_lat"] {
-            min-width: 60px;
-            max-width: 100px;
-        }
-
-        input[name="min_duration"] {
-            max-width: 80px;
-            min-width: 40px;
-            flex: 0 !important;
-        }
-        button {
-            background-color: #0d6efd;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-        }
-        .form-row button {
-            width: auto;
-            flex: 1;
-        }
-        
-        button:hover {
-            background-color: #0b5ed7;
-        }
-        /* Toast container */
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 9999;
-        }
-        
-        .toast {
-            min-width: 250px;
-            background-color: #3a3a3a;
-            border-radius: 4px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            margin-bottom: 10px;
-        }
-        
-        .toast-header {
-            background-color: #2b2b2b;
-            color: #dcdcdc;
-            border-bottom: 1px solid #555;
-            padding: 8px 12px;
-            border-radius: 4px 4px 0 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .toast-body {
-            padding: 12px;
-            color: #dcdcdc;
-        }
-        
-        .toast-warning .toast-header {
-            background-color: #856404;
-            color: #ffc107;
-            border-bottom-color: #ffc107;
-        }
-        
-        .toast-success .toast-header {
-            background-color: #155724;
-            color: #28a745;
-            border-bottom-color: #28a745;
-        }
-        
-        .toast .btn-close {
-            background-color: transparent;
-            border: none;
-            color: inherit;
-            font-size: 20px;
-            cursor: pointer;
-            opacity: 0.7;
-        }
-        
-        .toast .btn-close:hover {
-            opacity: 1;
-        }
-        .toast-warning .toast-header {
-            background-color: #856404;
-            color: #ffc107;
-            border-bottom-color: #ffc107;
-        }   
-        .assign-row {
+        /* Field grouping wrapper - keeps label + input pairs together */
+        .field-group {
             display: flex;
             align-items: center;
             gap: 8px;
-            flex-wrap: wrap; /* allow wrapping so button can move below */
-            margin-top: 20px; /* match couple-list spacing */
-            width: 100%; /* span full day-card content width */
-            box-sizing: border-box;
-            background-color: #2b2b2b; /* match couple-list background */
-            border-radius: 4px; /* match couple-list radius */
-            padding: 10px; /* match couple-list padding */
-            justify-content: flex-start; /* avoid pushing items out */
+            flex-shrink: 0;
         }
-        .assign-row .assign-fields {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex: 1 1 auto;
-            flex-wrap: nowrap; /* keep select + both times on one line */
-            min-width: 0; /* allow content to shrink */
-            overflow-x: auto; /* prevent wrap; allow scroll if too narrow */
-        }
-        .assign-row .form-select {
-            background-color: #2b2b2b;
-            border: 1px solid #555;
-            color: #dcdcdc;
-            display: inline-block;
-            min-width: 150px; /* tighter minimum to help fit */
-            flex: 1 1 100px; /* grow/shrink within row */
-            white-space: nowrap;
-        }
-        .assign-row input[type="time"] {
-            background-color: #2b2b2b;
-            border: 1px solid #555;
-            color: #dcdcdc;
-            width: 100px;
-            flex: 0 1 100px; /* narrower to keep on one line */
-        }
-        .assign-row .btn {
-            flex: 1 0 100%; /* force to next row and span width */
-            width: 100%;    
-            margin-top: 6px; /* spacing from inputs */
-        }
-        .assign-row .small-label { white-space: nowrap; color: #999; font-size: 12px; margin: 0 6px; }
 
+        /* Compact inputs for STT/LAT fields in field groups */
+        .field-group input[type="text"] {
+            min-width: 80px;
+            max-width: 100px;
+            flex: 0 1 auto;
+        }
+
+        @media (max-width: 1500px) {
+            .groups-page {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            
+            .main-container {
+                padding: 12px;
+            }
+
+            .header {
+                padding: 12px 16px;
+                flex-direction: column;
+                gap: 12px;
+            }
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .top-bar {
+                /* Stack top bar items on mobile */
+                flex-direction: column;
+                align-items: stretch;
+                gap: 16px;
+            }
+
+            .add-group-form {
+                /* Full width form on mobile */
+                width: 100%;
+            }
+
+            .add-group-form input[type="text"] {
+                min-width: 0;
+            }
+
+            .nav-buttons {
+                /* Center navigation buttons */
+                justify-content: space-between ;
+                flex-wrap: wrap;
+            }
+
+            .nav-buttons span {
+                color: #a1a1aa;
+                font-size: 14px;
+                font-weight: 500;
+            }
+
+            .group-card {
+                /* Reduce padding on mobile cards */
+                padding: 16px;
+            }
+
+            .assign-fields input[type="text"] {
+                /* Allow inputs to take full width on mobile */
+                min-width: 0;
+            }
+        }
+        @media (max-width: 576px) {
+            .main-container {
+                padding: 8px;
+            }
+
+            .groups-page {
+                gap: 16px;
+            }
+
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .btn-add, .nav-btn {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Manage the Groups</h1>
+        <h1>Manage Groups</h1>
         <a href="{% url 'calendar_view' %}" class="header-nav-btn">← Back to Calendar</a>
     </div>
-     <!-- Toast Notifications -->
+
     <div class="toast-container" aria-live="polite" aria-atomic="true">
-        {% if error_message %}
-        <div class="toast toast-warning" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <strong class="me-auto">⚠ Warning</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-            </div>
-            <div class="toast-body">
-                {{ error_message }}
-            </div>
-        </div>
-        {% endif %}
-        
-        {% if success_message %}
-        <div class="toast toast-success" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <strong class="me-auto">Success</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-            </div>
-            <div class="toast-body">
-                {{ success_message }}
-            </div>
-        </div>
-        {% endif %}
-        
-        {% if messages %}
-        {% for message in messages %}
-        <div class="toast toast-{{ message.tags }}" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <strong class="me-auto">{% if message.tags == 'success' %}✓ Success{% elif message.tags == 'warning' %}⚠ Warning{% else %}Info{% endif %}</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body">
-                {{ message }}
-            </div>
-        </div>
-        {% endfor %}
-        {% endif %}
     </div>
+
     <div class="main-container">
         <div class="top-bar">
             <form method="POST" action="{% url 'add_group' %}" class="add-group-form">
@@ -434,19 +467,32 @@
             </form>
 
             <div class="nav-buttons">
-                {% if page_obj.has_previous %}
-                <a id="prev-page" href="?page={{ page_obj.previous_page_number }}" class="nav-btn" data-target-page="{{ page_obj.previous_page_number }}">← Previous</a>
-                {% endif %}
+                <a id="prev-page"
+                   class="nav-btn{% if not page_obj.has_previous %} disabled{% endif %}"
+                   {% if page_obj.has_previous %}
+                   href="?page={{ page_obj.previous_page_number }}"
+                   data-target-page="{{ page_obj.previous_page_number }}"
+                   {% else %}
+                   aria-disabled="true" style="pointer-events: none;"
+                   {% endif %}>← Previous</a>
                 <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-                {% if page_obj.has_next %}
-                <a id="next-page" href="?page={{ page_obj.next_page_number }}" class="nav-btn" data-target-page="{{ page_obj.next_page_number }}">Next →</a>
-                {% endif %}
+                <a id="next-page"
+                   class="nav-btn{% if not page_obj.has_next %} disabled{% endif %}"
+                   {% if page_obj.has_next %}
+                   href="?page={{ page_obj.next_page_number }}"
+                   data-target-page="{{ page_obj.next_page_number }}"
+                   {% else %}
+                   aria-disabled="true" style="pointer-events: none;"
+                   {% endif %}>Next →</a>
             </div>
         </div>
-        <div id="groups-slider" class="groups-slider">
-          <div class="groups-page" data-page="{{ page_obj.number }}">
-                {% include 'partials/groups_page.html' %}
-          </div>
+
+        <div class="slider-container">
+            <div id="groups-slider" class="groups-slider">
+                <div class="groups-page" data-page="{{ page_obj.number }}">
+                    {% include 'partials/groups_page.html' %}
+                </div>
+            </div>
         </div>
     </div>
     
@@ -1078,6 +1124,50 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
 
+    // Inline editing for dance class STT
+    scopeEl.querySelectorAll('.editable-couple-dance-class-stt').forEach(span => {
+      span.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); span.blur(); } });
+      span.addEventListener('blur', () => {
+        const coupleId = span.getAttribute('data-couple-id');
+        const newDanceClassStt = span.textContent.trim();
+        const original = span.getAttribute('data-original');
+        if (!coupleId || newDanceClassStt === original || newDanceClassStt.length === 0) {
+          span.textContent = original;
+          return;
+        }
+        fetch(`/couples/update/${coupleId}/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken || '' },
+          body: JSON.stringify({ dance_class_stt: newDanceClassStt })
+        })
+        .then(res => { if (!res.ok) throw new Error('Failed'); return res.json(); })
+        .then(data => span.setAttribute('data-original', data.dance_class_stt))
+        .catch(() => { span.textContent = original; alert('Could not save change.'); });
+      });
+    });
+
+    // Inline editing for dance class LAT
+    scopeEl.querySelectorAll('.editable-couple-dance-class-lat').forEach(span => {
+      span.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); span.blur(); } });
+      span.addEventListener('blur', () => {
+        const coupleId = span.getAttribute('data-couple-id');
+        const newDanceClassLat = span.textContent.trim();
+        const original = span.getAttribute('data-original');
+        if (!coupleId || newDanceClassLat === original || newDanceClassLat.length === 0) {
+          span.textContent = original;
+          return;
+        }
+        fetch(`/couples/update/${coupleId}/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken || '' },
+          body: JSON.stringify({ dance_class_lat: newDanceClassLat })
+        })
+        .then(res => { if (!res.ok) throw new Error('Failed'); return res.json(); })
+        .then(data => span.setAttribute('data-original', data.dance_class_lat))
+        .catch(() => { span.textContent = original; alert('Could not save change.'); });
+      });
+    });
+
     // Inline editing for group names
     scopeEl.querySelectorAll('.editable-group-name').forEach(h3 => {
       h3.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); h3.blur(); } });
@@ -1174,61 +1264,53 @@ document.addEventListener('DOMContentLoaded', function() {
       pageCounter.textContent = `Page ${currentPage} of ${numPages}`;
     }
 
-    // Update/show/hide previous button
-    if (currentPage > 1) {
-      if (!prevBtn) {
-        // Create button if it doesn't exist
-        const navButtons = document.querySelector('.nav-buttons');
-        const newPrevBtn = document.createElement('a');
-        newPrevBtn.id = 'prev-page';
-        newPrevBtn.className = 'nav-btn';
-        newPrevBtn.textContent = '← Previous';
-        newPrevBtn.setAttribute('data-target-page', currentPage - 1);
-        newPrevBtn.href = `?page=${currentPage - 1}`;
-        navButtons.insertBefore(newPrevBtn, pageCounter);
-        
-        // Bind click handler
-        newPrevBtn.addEventListener('click', async (e) => {
-          e.preventDefault();
-          const target = Number(newPrevBtn.getAttribute('data-target-page'));
-          if (target) await loadPage(target);
-        });
-      } else {
-        prevBtn.style.display = '';
-        prevBtn.setAttribute('data-target-page', currentPage - 1);
-        prevBtn.href = `?page=${currentPage - 1}`;
-      }
-    } else if (prevBtn) {
-      prevBtn.style.display = 'none';
-    }
+        // Update previous button state
+        if (prevBtn) {
+            if (currentPage > 1) {
+                prevBtn.classList.remove('disabled');
+                prevBtn.removeAttribute('aria-disabled');
+                prevBtn.style.pointerEvents = '';
+                prevBtn.style.backgroundColor = '';
+                prevBtn.style.cursor = '';
+                prevBtn.style.opacity = '';
+                prevBtn.setAttribute('data-target-page', currentPage - 1);
+                prevBtn.href = `?page=${currentPage - 1}`;
+                prevBtn.style.display = '';
+            } else {
+                prevBtn.classList.add('disabled');
+                prevBtn.setAttribute('aria-disabled', 'true');
+                prevBtn.removeAttribute('href');
+                prevBtn.removeAttribute('data-target-page');
+                prevBtn.style.pointerEvents = 'none';
+                prevBtn.style.backgroundColor = 'gray';
+                prevBtn.style.cursor = 'default';
+                prevBtn.style.opacity = '0.6';
+            }
+        }
 
-    // Update/show/hide next button
-    if (currentPage < numPages) {
-      if (!nextBtn) {
-        // Create button if it doesn't exist
-        const navButtons = document.querySelector('.nav-buttons');
-        const newNextBtn = document.createElement('a');
-        newNextBtn.id = 'next-page';
-        newNextBtn.className = 'nav-btn';
-        newNextBtn.textContent = 'Next →';
-        newNextBtn.setAttribute('data-target-page', currentPage + 1);
-        newNextBtn.href = `?page=${currentPage + 1}`;
-        navButtons.appendChild(newNextBtn);
-        
-        // Bind click handler
-        newNextBtn.addEventListener('click', async (e) => {
-          e.preventDefault();
-          const target = Number(newNextBtn.getAttribute('data-target-page'));
-          if (target) await loadPage(target);
-        });
-      } else {
-        nextBtn.style.display = '';
-        nextBtn.setAttribute('data-target-page', currentPage + 1);
-        nextBtn.href = `?page=${currentPage + 1}`;
-      }
-    } else if (nextBtn) {
-      nextBtn.style.display = 'none';
-    }
+        // Update next button state
+        if (nextBtn) {
+            if (currentPage < numPages) {
+                nextBtn.classList.remove('disabled');
+                nextBtn.removeAttribute('aria-disabled');
+                nextBtn.style.pointerEvents = '';
+                nextBtn.style.backgroundColor = '';
+                nextBtn.style.cursor = '';
+                nextBtn.style.opacity = '';
+                nextBtn.setAttribute('data-target-page', currentPage + 1);
+                nextBtn.href = `?page=${currentPage + 1}`;
+                nextBtn.style.display = '';
+            } else {
+                nextBtn.classList.add('disabled');
+                nextBtn.setAttribute('aria-disabled', 'true');
+                nextBtn.removeAttribute('href');
+                nextBtn.removeAttribute('data-target-page');
+                nextBtn.style.pointerEvents = 'none';
+                nextBtn.style.backgroundColor = 'gray';
+                nextBtn.style.cursor = 'default';
+                nextBtn.style.opacity = '0.6';
+            }
+        }
   }
 
   function slideTo(page) {
