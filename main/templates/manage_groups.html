@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Groups</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #2b2b2b !important;
+            color: #dcdcdc;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #dc3545;
+            padding: 15px;
+            color: white;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .header-nav-btn {
+            position: absolute;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.15);
+            color: white;
+            padding: 8px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .header-nav-btn:hover {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .groups-container {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .groups-slider {
+            display: flex;
+            transition: transform 0.3s ease;
+        }
+        
+        .main-container {
+            overflow: hidden;
+        }
+
+        .groups-page {
+            min-width: 100%;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            justify-content: space-around;
+            padding: 0 20px;
+        }
+
+        .group-card {
+            flex: 1 1 auto;
+            background-color: #3a3a3a;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            min-width: 300px;
+            max-width: calc(50% - 20px);
+        }
+
+        .group-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .group-header h3 {
+            margin: 0;
+        }
+
+        /* Top bar layout */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 200px;
+            padding: 20px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* Add Group form styles */
+        .add-group-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin: 0;
+        }
+
+        .add-group-form input[type="text"] {
+            flex: 0;
+            background-color: #2b2b2b;
+            border: 1px solid #555;
+            color: #dcdcdc;
+            padding: 8px 12px;
+            border-radius: 4px;
+            min-width: 18ch; /* minimal visible width */
+            max-width: 60ch; /* cap to avoid breaking layout */
+        }
+        /* Auto-width behavior using ch units (reinforced by JS) */
+        .auto-width-input {
+            width: auto;
+        }
+
+        .btn-add {
+            background-color: #0d6efd;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-add:hover {
+            background-color: #0b5ed7;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        .main-container { padding: 0 20px 20px;}
+        .couple-list {
+            background-color: #2b2b2b;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 20px;
+        }
+        .couple-item {
+            background-color: #3a3a3a;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Drag and drop styles */
+        .couple-item {
+            cursor: move;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .couple-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .group-card.drag-over {
+            background-color: #4a4a4a;
+            border: 2px dashed #1e7db8;
+        }
+
+        .couple-list.drag-over {
+            background-color: #3a3a3a;
+        }
+
+        /* add couple */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        input[type="text"] {
+            background-color: #2b2b2b;
+            min-width: 200px;
+            border: 1px solid #555;
+            color: #dcdcdc;
+            padding: 8px;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            flex: auto;
+        }
+
+        input[name="dance_class_stt"] {
+            min-width: 60px;
+            max-width: 100px;
+        }
+        
+        input[name="dance_class_lat"] {
+            min-width: 60px;
+            max-width: 100px;
+        }
+
+        input[name="min_duration"] {
+            max-width: 80px;
+            min-width: 40px;
+            flex: 0 !important;
+        }
+        button {
+            background-color: #0d6efd;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+        .form-row button {
+            width: auto;
+            flex: 1;
+        }
+        
+        button:hover {
+            background-color: #0b5ed7;
+        }
+        /* Toast container */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 9999;
+        }
+        
+        .toast {
+            min-width: 250px;
+            background-color: #3a3a3a;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+        
+        .toast-header {
+            background-color: #2b2b2b;
+            color: #dcdcdc;
+            border-bottom: 1px solid #555;
+            padding: 8px 12px;
+            border-radius: 4px 4px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .toast-body {
+            padding: 12px;
+            color: #dcdcdc;
+        }
+        
+        .toast-warning .toast-header {
+            background-color: #856404;
+            color: #ffc107;
+            border-bottom-color: #ffc107;
+        }
+        
+        .toast-success .toast-header {
+            background-color: #155724;
+            color: #28a745;
+            border-bottom-color: #28a745;
+        }
+        
+        .toast .btn-close {
+            background-color: transparent;
+            border: none;
+            color: inherit;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+        
+        .toast .btn-close:hover {
+            opacity: 1;
+        }
+        .toast-warning .toast-header {
+            background-color: #856404;
+            color: #ffc107;
+            border-bottom-color: #ffc107;
+        }   
+        .assign-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap; /* allow wrapping so button can move below */
+            margin-top: 20px; /* match couple-list spacing */
+            width: 100%; /* span full day-card content width */
+            box-sizing: border-box;
+            background-color: #2b2b2b; /* match couple-list background */
+            border-radius: 4px; /* match couple-list radius */
+            padding: 10px; /* match couple-list padding */
+            justify-content: flex-start; /* avoid pushing items out */
+        }
+        .assign-row .assign-fields {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1 1 auto;
+            flex-wrap: nowrap; /* keep select + both times on one line */
+            min-width: 0; /* allow content to shrink */
+            overflow-x: auto; /* prevent wrap; allow scroll if too narrow */
+        }
+        .assign-row .form-select {
+            background-color: #2b2b2b;
+            border: 1px solid #555;
+            color: #dcdcdc;
+            display: inline-block;
+            min-width: 150px; /* tighter minimum to help fit */
+            flex: 1 1 100px; /* grow/shrink within row */
+            white-space: nowrap;
+        }
+        .assign-row input[type="time"] {
+            background-color: #2b2b2b;
+            border: 1px solid #555;
+            color: #dcdcdc;
+            width: 100px;
+            flex: 0 1 100px; /* narrower to keep on one line */
+        }
+        .assign-row .btn {
+            flex: 1 0 100%; /* force to next row and span width */
+            width: 100%;    
+            margin-top: 6px; /* spacing from inputs */
+        }
+        .assign-row .small-label { white-space: nowrap; color: #999; font-size: 12px; margin: 0 6px; }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Manage the Groups</h1>
+        <a href="{% url 'calendar_view' %}" class="header-nav-btn">← Back to Calendar</a>
+    </div>
+     <!-- Toast Notifications -->
+    <div class="toast-container" aria-live="polite" aria-atomic="true">
+        {% if error_message %}
+        <div class="toast toast-warning" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">⚠ Warning</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                {{ error_message }}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if success_message %}
+        <div class="toast toast-success" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">Success</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                {{ success_message }}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if messages %}
+        {% for message in messages %}
+        <div class="toast toast-{{ message.tags }}" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">{% if message.tags == 'success' %}✓ Success{% elif message.tags == 'warning' %}⚠ Warning{% else %}Info{% endif %}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                {{ message }}
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+    <div class="main-container">
+        <div class="top-bar">
+            <form method="POST" action="{% url 'add_group' %}" class="add-group-form">
+                {% csrf_token %}
+                <input type="text" name="group_name" class="auto-width-input" placeholder="New Group Name" required>
+                <button type="submit" class="btn-add">Add Group</button>
+            </form>
+
+            <div class="nav-buttons">
+                {% if page_obj.has_previous %}
+                <a id="prev-page" href="?page={{ page_obj.previous_page_number }}" class="nav-btn" data-target-page="{{ page_obj.previous_page_number }}">← Previous</a>
+                {% endif %}
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                <a id="next-page" href="?page={{ page_obj.next_page_number }}" class="nav-btn" data-target-page="{{ page_obj.next_page_number }}">Next →</a>
+                {% endif %}
+            </div>
+        </div>
+        <div id="groups-slider" class="groups-slider">
+          <div class="groups-page" data-page="{{ page_obj.number }}">
+                {% include 'partials/groups_page.html' %}
+          </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-adjust the width of the group input based on its content
+        (function() {
+            const input = document.querySelector('input[name="group_name"].auto-width-input');
+            if (!input) return;
+            const minChars = 16; // match CSS min-width
+            const maxChars = 60; // match CSS max-width
+            const adjust = () => {
+                const len = Math.max(minChars, Math.min(maxChars, input.value.length + 1));
+                input.style.width = len + 'ch';
+            };
+            adjust();
+            input.addEventListener('input', adjust);
+        })();
+
+        // Inline edit: save couple name on Enter or blur
+        (function() {
+            const spans = document.querySelectorAll('.editable-couple');
+            const csrftoken = (function() {
+                const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                return el ? el.value : null;
+            })();
+
+            function saveChange(span) {
+                const coupleId = span.getAttribute('data-couple-id');
+                const newName = span.textContent.trim();
+                const original = span.getAttribute('data-original');
+                if (!coupleId || newName === original || newName.length === 0) {
+                    span.textContent = original; // revert empty
+                    return;
+                }
+                span.classList.add('saving');
+                fetch(`/couples/update/${coupleId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken || '',
+                    },
+                    body: JSON.stringify({ name: newName })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Failed to save');
+                    return res.json();
+                })
+                .then(data => {
+                    span.setAttribute('data-original', data.name);
+                })
+                .catch(() => {
+                    // revert on error
+                    span.textContent = original;
+                    alert('Could not save change.');
+                })
+                .finally(() => {
+                    span.classList.remove('saving');
+                });
+            }
+
+            spans.forEach(span => {
+                span.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        span.blur();
+                    }
+                });
+                span.addEventListener('blur', () => saveChange(span));
+            });
+        })();
+        (function() {
+            const spans = document.querySelectorAll('.editable-couple-dance-class-stt');
+            const csrftoken = (function() {
+                const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                return el ? el.value : null;
+            })();
+
+            function saveChange(span) {
+                const coupleId = span.getAttribute('data-couple-id');
+                const newDanceClassStt = span.textContent.trim();
+                const original = span.getAttribute('data-original');
+
+                if (!coupleId || newDanceClassStt === original || newDanceClassStt.length === 0) {
+                    span.textContent = original; // revert empty
+                    return;
+                }
+                span.classList.add('saving');
+                fetch(`/couples/update/${coupleId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken || '',
+                    },
+                    body: JSON.stringify({ dance_class_stt: newDanceClassStt })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Failed to save');
+                    return res.json();
+                })
+                .then(data => {
+                    span.setAttribute('data-original', data.dance_class_stt);
+                })
+                .catch(() => {
+                    // revert on error
+                    span.textContent = original;
+                    alert('Could not save change.');
+                })
+                .finally(() => {
+                    span.classList.remove('saving');
+                });
+            }
+            
+            spans.forEach(span => {
+                span.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        span.blur();
+                    }
+                });
+                span.addEventListener('blur', () => saveChange(span));
+            });
+        })();
+        (function() {
+            const spans = document.querySelectorAll('.editable-couple-dance-class-lat');
+            const csrftoken = (function() {
+                const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                return el ? el.value : null;
+            })();
+
+            function saveChange(span) {
+                const coupleId = span.getAttribute('data-couple-id');
+                const newDanceClassLat = span.textContent.trim();
+                const original = span.getAttribute('data-original');
+
+                if (!coupleId || newDanceClassLat === original || newDanceClassLat.length === 0) {
+                    span.textContent = original; // revert empty
+                    return;
+                }
+                span.classList.add('saving');
+                fetch(`/couples/update/${coupleId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken || '',
+                    },
+                    body: JSON.stringify({ dance_class_lat: newDanceClassLat })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Failed to save');
+                    return res.json();
+                })
+                .then(data => {
+                    span.setAttribute('data-original', data.dance_class_lat);
+                })
+                .catch(() => {
+                    // revert on error
+                    span.textContent = original;
+                    alert('Could not save change.');
+                })
+                .finally(() => {
+                    span.classList.remove('saving');
+                });
+            }
+            
+            spans.forEach(span => {
+                span.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        span.blur();
+                    }
+                });
+                span.addEventListener('blur', () => saveChange(span));
+            });
+        })();
+        (function() {
+            const spans = document.querySelectorAll('.editable-time-duration');
+            const csrftoken = (function() {
+                const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                return el ? el.value : null;
+            })();
+            function saveChange(span) {
+                const coupleId = span.getAttribute('data-couple-id');
+                const newTimeDuration = span.textContent.trim();
+                const original = span.getAttribute('data-original');
+                if (!coupleId || newTimeDuration === original || newTimeDuration.length === 0) {
+                    span.textContent = original;
+                    return;
+                }
+                const numericValue = Number(newTimeDuration);
+                if (!Number.isFinite(numericValue) || numericValue <= 0) {
+                    span.textContent = original;
+                    alert('Please enter a positive number.');
+                    return;
+                }
+                span.classList.add('saving');
+                fetch(`/couples/update/${coupleId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type':'application/json',
+                        'X-CSRFToken': csrftoken || '',
+                    },
+                    body: JSON.stringify({ min_duration: numericValue })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Failed to save');
+                    return res.json();
+                })
+                .then(data => {
+                    span.textContent = data.min_duration;
+                    span.setAttribute('data-original', String(data.min_duration));
+                })
+                .catch(() => {
+                    // revert on error
+                    span.textContent = original;
+                    alert('Could not save change.');
+                })
+                .finally(() => {
+                    span.classList.remove('saving');
+                });
+            }
+
+            spans.forEach(span => {
+                span.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        span.blur();
+                    }
+                });
+                span.addEventListener('blur', () => saveChange(span));
+            })
+        })();
+        // Drag and Drop functionality
+        (function() {
+            let draggedElement = null;
+            const csrftoken = (function() {
+                const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                return el ? el.value : null;
+            })();
+
+            // Make couple items draggable
+            document.querySelectorAll('.couple-item').forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+
+            // Make groups cards drop targets
+            document.querySelectorAll('.group-card').forEach(card => {
+                card.addEventListener('dragover', handleDragOver);
+                card.addEventListener('dragleave', handleDragLeave);
+                card.addEventListener('drop', handleDrop);
+            });
+
+            function handleDragStart(e) {
+                // Don't allow drag if user is editing text
+                if (e.target.classList.contains('editable-couple') || 
+                    e.target.classList.contains('editable-time-duration')) {
+                    e.preventDefault();
+                    return;
+                }
+
+                draggedElement = this;
+                this.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', this.innerHTML);
+            }
+
+            function handleDragEnd(e) {
+                this.classList.remove('dragging');
+                document.querySelectorAll('.group-card').forEach(card => {
+                    card.classList.remove('drag-over');
+                });
+            }
+
+            function handleDragOver(e) {
+                if (e.preventDefault) {
+                    e.preventDefault();
+                }
+                e.dataTransfer.dropEffect = 'move';
+                this.classList.add('drag-over');
+                return false;
+            }
+            
+            function handleDragLeave(e) {
+                this.classList.remove('drag-over');
+            }
+
+            function handleDrop(e) {
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                }
+                e.preventDefault();
+
+                const targetGroupCard = this;
+                targetGroupCard.classList.remove('drag-over');
+
+                if (draggedElement) {
+                    const coupleId = draggedElement.getAttribute('data-couple-id');
+                    const sourceGroupId = draggedElement.getAttribute('data-group-id');
+                    const targetGroupId = targetGroupCard.getAttribute('data-group-id');
+                
+                    // Don't do anything if dropping in same group
+                    if (sourceGroupId === targetGroupId) {
+                        return false;
+                    }
+
+                    // Send AJAX request to update couple's group
+                    fetch('/couples/move/', {
+                        method:'POST',
+                        headers: {
+                            'Content-Type':'application/json',
+                            'X-CSRFToken': csrftoken || '',
+                        },
+                        body: JSON.stringify({
+                            couple_id: coupleId,
+                            target_group_id: targetGroupId
+                        })
+                    })
+                    .then(res => {
+                        if (!res.ok) throw new Error('Failed to move couple');
+                        return res.json();
+                    })
+                    .then(data => {
+                        // Reload page to show updated groups
+                        window.location.reload();
+                    })
+                    .catch(err => {
+                        alert('Could not move couple to new group.');
+                        console.error(err);
+                    });
+                }
+                return false;
+            }
+        })();
+
+        // Enable dropping on pagination buttons to carry the drag across pages
+        (function() {
+            let draggedElementRef = null;
+
+            // Track current dragged element from existing handlers
+            document.querySelectorAll('.couple-item').forEach(item => {
+                item.addEventListener('dragstart', function() {
+                    draggedElementRef = this;
+                });
+                item.addEventListener('dragend', function() {
+                    draggedElementRef = null;
+                });
+            });
+
+            function makeDroppableNav(btn) {
+                if (!btn) return;
+                btn.addEventListener('dragover', e => { e.preventDefault(); btn.classList.add('drag-over'); });
+                btn.addEventListener('dragleave', () => btn.classList.remove('drag-over'));
+                btn.addEventListener('drop', e => {
+                    e.preventDefault();
+                    btn.classList.remove('drag-over');
+                    if (!draggedElementRef) return;
+                    const coupleId = draggedElementRef.getAttribute('data-couple-id');
+                    const sourceGroupId = draggedElementRef.getAttribute('data-group-id');
+                    // Store pending move meta to guide the user after navigation
+                    localStorage.setItem('pendingMoveHint', JSON.stringify({ coupleId, sourceGroupId }));
+                    window.location.href = btn.href;
+                });
+            }
+
+            const prevBtn = document.getElementById('prev-page');
+            const nextBtn = document.getElementById('next-page');
+            makeDroppableNav(prevBtn);
+            makeDroppableNav(nextBtn);
+
+            // On load, if there is a pending move, show a small hint toast and enable click-to-complete
+            document.addEventListener('DOMContentLoaded', () => {
+                const pending = localStorage.getItem('pendingMoveHint');
+                if (!pending) return;
+                const { coupleId } = JSON.parse(pending);
+                // Create a lightweight toast hint
+                const container = document.querySelector('.toast-container') || (function(){
+                    const c = document.createElement('div');
+                    c.className = 'toast-container';
+                    c.style.position = 'fixed';
+                    c.style.bottom = '20px';
+                    c.style.left = '20px';
+                    c.style.zIndex = '9999';
+                    document.body.appendChild(c);
+                    return c;
+                })();
+                const hint = document.createElement('div');
+                hint.className = 'toast';
+                hint.innerHTML = '<div class="toast-header"><strong class="me-auto">Info</strong><button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button></div><div class="toast-body">Navigation complete. Click a group card to move the couple.</div>';
+                container.appendChild(hint);
+                try {
+                    const toast = new bootstrap.Toast(hint, { autohide: true, delay: 3500 });
+                    toast.show();
+                } catch (_) {
+                    // Fallback: simple auto-remove
+                    setTimeout(() => hint.remove(), 3500);
+                }
+
+                // Enable click-to-complete on group cards using the stored coupleId
+                const csrftoken = (function() {
+                    const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                    return el ? el.value : null;
+                })();
+                document.querySelectorAll('.group-card').forEach(card => {
+                    card.classList.add('drag-over'); // subtle highlight to indicate selectable
+                    card.addEventListener('click', () => {
+                        const targetGroupId = card.getAttribute('data-group-id');
+                        fetch('/couples/move/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrftoken || '',
+                            },
+                            body: JSON.stringify({ couple_id: coupleId, target_group_id: targetGroupId })
+                        })
+                        .then(res => {
+                            if (!res.ok) throw new Error('Failed to move couple');
+                            return res.json();
+                        })
+                        .then(() => {
+                            localStorage.removeItem('pendingMoveHint');
+                            window.location.reload();
+                        })
+                        .catch(err => {
+                            alert('Could not move couple to this group.');
+                            console.error(err);
+                        });
+                    }, { once: true });
+                });
+            });
+        })();
+
+        // Auto-switch pages when dragging near edges (hover dwell)
+        (function() {
+            let currentDragged = null;
+            let dwellTimer = null;
+            const EDGE_THRESHOLD = 80; // px from window edge
+            const HOVER_DELAY_MS = 500; // delay before switching
+
+            function handleDragStart(e) {
+                // prevent starting drag while editing
+                if (e.target.classList.contains('editable-couple') || e.target.classList.contains('editable-time-duration')) {
+                    e.preventDefault();
+                    return;
+                }
+                currentDragged = this;
+                document.addEventListener('dragover', onGlobalDragOver);
+            }
+
+            function handleDragEnd() {
+                document.removeEventListener('dragover', onGlobalDragOver);
+                clearTimeout(dwellTimer);
+                dwellTimer = null;
+                currentDragged = null;
+            }
+
+            function onGlobalDragOver(e) {
+                const x = e.clientX;
+                const width = window.innerWidth;
+                const nearRight = (width - x) < EDGE_THRESHOLD;
+                const nearLeft = x < EDGE_THRESHOLD;
+
+                if (!nearRight && !nearLeft) {
+                    if (dwellTimer) { clearTimeout(dwellTimer); dwellTimer = null; }
+                    return;
+                }
+                if (dwellTimer) return; // already counting down
+
+                dwellTimer = setTimeout(() => {
+                    const targetHref = nearRight ? (document.getElementById('next-page')?.href) : (document.getElementById('prev-page')?.href);
+                    if (!targetHref || !currentDragged) return;
+                    const coupleId = currentDragged.getAttribute('data-couple-id');
+                    const sourceGroupId = currentDragged.getAttribute('data-group-id');
+                    localStorage.setItem('pendingMoveHint', JSON.stringify({ coupleId, sourceGroupId }));
+                    window.location.href = targetHref;
+                }, HOVER_DELAY_MS);
+            }
+
+            // hook into existing items
+            document.querySelectorAll('.couple-item').forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+        })();
+
+        // Initialize and show all toasts
+        document.addEventListener('DOMContentLoaded', function() {
+            const toastElements = document.querySelectorAll('.toast');
+            toastElements.forEach(toastEl => {
+                const toast = new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 2000  // Auto-hide after 2 seconds
+                });
+                toast.show();
+            });
+        });
+    </script>
+    <script>
+// AJAX Pagination with drag-and-drop support
+document.addEventListener('DOMContentLoaded', function() {
+  const slider = document.getElementById('groups-slider');
+  const loadedPages = new Set([Number(document.querySelector('.groups-page')?.dataset.page || 1)]);
+  const csrftoken = document.querySelector('input[name="csrfmiddlewaretoken"]')?.value;
+  let currentPage = Number(document.querySelector('.groups-page')?.dataset.page || 1);
+  
+  // Get total pages from initial load
+  const pageCounterSpan = document.querySelector('.nav-buttons span');
+  const initialText = pageCounterSpan?.textContent || '';
+  const numPagesMatch = initialText.match(/of (\d+)/);
+  const totalPages = numPagesMatch ? Number(numPagesMatch[1]) : 1;
+
+  // Shared drag/drop handlers accessible to all pages
+  const DragHandlers = {
+    draggedElement: null,
+    
+    handleDragStart(e) {
+      if (e.target.classList.contains('editable-couple') || e.target.classList.contains('editable-time-duration')) {
+        e.preventDefault();
+        return;
+      }
+      DragHandlers.draggedElement = this;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/html', this.innerHTML);
+    },
+
+    handleDragEnd(e) {
+      this.classList.remove('dragging');
+      document.querySelectorAll('.group-card').forEach(card => card.classList.remove('drag-over'));
+    },
+
+    handleDragOver(e) {
+      if (e.preventDefault) e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      this.classList.add('drag-over');
+      return false;
+    },
+
+    handleDragLeave(e) {
+      this.classList.remove('drag-over');
+    },
+
+    handleDrop(e) {
+      if (e.stopPropagation) e.stopPropagation();
+      e.preventDefault();
+      const targetGroupCard = this;
+      targetGroupCard.classList.remove('drag-over');
+
+      if (DragHandlers.draggedElement) {
+        const coupleId = DragHandlers.draggedElement.getAttribute('data-couple-id');
+        const sourceGroupId = DragHandlers.draggedElement.getAttribute('data-group-id');
+        const targetGroupId = targetGroupCard.getAttribute('data-group-id');
+
+        if (sourceGroupId === targetGroupId) return false;
+
+        fetch('/couples/move/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken || '' },
+          body: JSON.stringify({ couple_id: coupleId, target_group_id: targetGroupId })
+        })
+        .then(res => { if (!res.ok) throw new Error('Failed to move'); return res.json(); })
+        .then(() => window.location.href = '?page=' + currentPage)
+        .catch(err => { alert('Could not move couple.'); console.error(err); });
+      }
+      return false;
+    }
+  };
+
+  // Bind all interactive handlers to a scope
+  function bindAllHandlers(scopeEl) {
+    // Drag and drop
+    scopeEl.querySelectorAll('.couple-item').forEach(item => {
+      item.addEventListener('dragstart', DragHandlers.handleDragStart);
+      item.addEventListener('dragend', DragHandlers.handleDragEnd);
+    });
+    scopeEl.querySelectorAll('.group-card').forEach(card => {
+      card.addEventListener('dragover', DragHandlers.handleDragOver);
+      card.addEventListener('dragleave', DragHandlers.handleDragLeave);
+      card.addEventListener('drop', DragHandlers.handleDrop);
+    });
+
+    // Inline editing for couple names
+    scopeEl.querySelectorAll('.editable-couple').forEach(span => {
+      span.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); span.blur(); } });
+      span.addEventListener('blur', () => {
+        const coupleId = span.getAttribute('data-couple-id');
+        const newName = span.textContent.trim();
+        const original = span.getAttribute('data-original');
+        if (!coupleId || newName === original || newName.length === 0) {
+          span.textContent = original;
+          return;
+        }
+        fetch(`/couples/update/${coupleId}/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken || '' },
+          body: JSON.stringify({ name: newName })
+        })
+        .then(res => { if (!res.ok) throw new Error('Failed'); return res.json(); })
+        .then(data => span.setAttribute('data-original', data.name))
+        .catch(() => { span.textContent = original; alert('Could not save change.'); });
+      });
+    });
+
+    // Inline editing for durations
+    scopeEl.querySelectorAll('.editable-time-duration').forEach(span => {
+      span.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); span.blur(); } });
+      span.addEventListener('blur', () => {
+        const coupleId = span.getAttribute('data-couple-id');
+        const newDuration = span.textContent.trim();
+        const original = span.getAttribute('data-original');
+        if (!coupleId || newDuration === original || newDuration.length === 0) {
+          span.textContent = original;
+          return;
+        }
+        const numericValue = Number(newDuration);
+        if (!Number.isFinite(numericValue) || numericValue <= 0) {
+          span.textContent = original;
+          alert('Please enter a positive number.');
+          return;
+        }
+        fetch(`/couples/update/${coupleId}/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken || '' },
+          body: JSON.stringify({ min_duration: numericValue })
+        })
+        .then(res => { if (!res.ok) throw new Error('Failed'); return res.json(); })
+        .then(data => { span.textContent = data.min_duration; span.setAttribute('data-original', String(data.min_duration)); })
+        .catch(() => { span.textContent = original; alert('Could not save change.'); });
+      });
+    });
+
+    // Inline editing for group names
+    scopeEl.querySelectorAll('.editable-group-name').forEach(h3 => {
+      h3.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); h3.blur(); } });
+      h3.addEventListener('blur', () => {
+        const groupId = h3.getAttribute('data-group-id');
+        const newName = h3.textContent.trim();
+        const original = h3.getAttribute('data-original');
+        if (!groupId || newName === original || newName.length === 0) {
+          h3.textContent = original;
+          return;
+        }
+        fetch(`/groups/update/${groupId}/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken || '' },
+          body: JSON.stringify({ name: newName })
+        })
+        .then(res => { if (!res.ok) throw new Error('Failed'); return res.json(); })
+        .then(data => h3.setAttribute('data-original', data.name))
+        .catch(() => { h3.textContent = original; alert('Could not save change.'); });
+      });
+    });
+  }
+
+  // Load a page via AJAX
+  async function loadPage(page) {
+    if (loadedPages.has(page)) {
+      slideTo(page);
+      updatePaginationButtons(page);
+      return;
+    }
+    try {
+      const res = await fetch(`/manage_groups/fragment/?page=${page}`);
+      if (!res.ok) throw new Error('Failed to fetch page');
+      const data = await res.json();
+      const wrapper = document.createElement('div');
+      wrapper.className = 'groups-page';
+      wrapper.dataset.page = data.page;
+      wrapper.innerHTML = data.html;
+      
+      // Insert page in correct order
+      const existingPages = Array.from(slider.querySelectorAll('.groups-page'));
+      let inserted = false;
+      let insertedBeforeCurrent = false;
+      
+      for (let i = 0; i < existingPages.length; i++) {
+        const existingPageNum = Number(existingPages[i].dataset.page);
+        if (data.page < existingPageNum) {
+          slider.insertBefore(wrapper, existingPages[i]);
+          inserted = true;
+          // Check if we inserted before the current page
+          if (existingPageNum === currentPage) {
+            insertedBeforeCurrent = true;
+          }
+          break;
+        }
+      }
+      if (!inserted) {
+        slider.appendChild(wrapper);
+      }
+      
+      // If we inserted before the current page, adjust the transform to maintain position
+      if (insertedBeforeCurrent) {
+        const currentIndex = existingPages.findIndex(p => Number(p.dataset.page) === currentPage);
+        if (currentIndex >= 0) {
+          // Shift the transform by one page width to compensate
+          slider.style.transition = 'none';
+          slider.style.transform = `translateX(-${(currentIndex + 1) * 100}%)`;
+          // Force reflow
+          slider.offsetHeight;
+          slider.style.transition = 'transform 0.3s ease';
+        }
+      }
+      
+      loadedPages.add(data.page);
+      bindAllHandlers(wrapper);
+      slideTo(data.page);
+      updatePaginationButtons(page, data);
+    } catch(err) {
+      console.error('Could not load page:', err);
+      // Fallback to full navigation
+      window.location.href = '?page=' + page;
+    }
+  }
+
+  function updatePaginationButtons(currentPage, data) {
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+    const pageCounter = document.querySelector('.nav-buttons span');
+    
+    const numPages = data?.num_pages || totalPages;
+    
+    // Update page counter
+    if (pageCounter) {
+      pageCounter.textContent = `Page ${currentPage} of ${numPages}`;
+    }
+
+    // Update/show/hide previous button
+    if (currentPage > 1) {
+      if (!prevBtn) {
+        // Create button if it doesn't exist
+        const navButtons = document.querySelector('.nav-buttons');
+        const newPrevBtn = document.createElement('a');
+        newPrevBtn.id = 'prev-page';
+        newPrevBtn.className = 'nav-btn';
+        newPrevBtn.textContent = '← Previous';
+        newPrevBtn.setAttribute('data-target-page', currentPage - 1);
+        newPrevBtn.href = `?page=${currentPage - 1}`;
+        navButtons.insertBefore(newPrevBtn, pageCounter);
+        
+        // Bind click handler
+        newPrevBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const target = Number(newPrevBtn.getAttribute('data-target-page'));
+          if (target) await loadPage(target);
+        });
+      } else {
+        prevBtn.style.display = '';
+        prevBtn.setAttribute('data-target-page', currentPage - 1);
+        prevBtn.href = `?page=${currentPage - 1}`;
+      }
+    } else if (prevBtn) {
+      prevBtn.style.display = 'none';
+    }
+
+    // Update/show/hide next button
+    if (currentPage < numPages) {
+      if (!nextBtn) {
+        // Create button if it doesn't exist
+        const navButtons = document.querySelector('.nav-buttons');
+        const newNextBtn = document.createElement('a');
+        newNextBtn.id = 'next-page';
+        newNextBtn.className = 'nav-btn';
+        newNextBtn.textContent = 'Next →';
+        newNextBtn.setAttribute('data-target-page', currentPage + 1);
+        newNextBtn.href = `?page=${currentPage + 1}`;
+        navButtons.appendChild(newNextBtn);
+        
+        // Bind click handler
+        newNextBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const target = Number(newNextBtn.getAttribute('data-target-page'));
+          if (target) await loadPage(target);
+        });
+      } else {
+        nextBtn.style.display = '';
+        nextBtn.setAttribute('data-target-page', currentPage + 1);
+        nextBtn.href = `?page=${currentPage + 1}`;
+      }
+    } else if (nextBtn) {
+      nextBtn.style.display = 'none';
+    }
+  }
+
+  function slideTo(page) {
+    const pages = Array.from(slider.querySelectorAll('.groups-page'));
+    const index = pages.findIndex(p => Number(p.dataset.page) === Number(page));
+    if (index >= 0) {
+      slider.style.transform = `translateX(-${index * 100}%)`;
+      currentPage = Number(page);
+    }
+  }
+
+  // Wire buttons
+  const prevBtn = document.getElementById('prev-page');
+  const nextBtn = document.getElementById('next-page');
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const target = Number(prevBtn.getAttribute('data-target-page'));
+      if (target) await loadPage(target);
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const target = Number(nextBtn.getAttribute('data-target-page'));
+      if (target) await loadPage(target);
+    });
+  }
+
+  // Initial binding for current page
+  bindAllHandlers(document.querySelector('.groups-page'));
+});
+</script>
+</body>
+</html>

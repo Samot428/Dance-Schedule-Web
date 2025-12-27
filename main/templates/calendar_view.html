@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+{% load availability_tags %}
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dance Calendar</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+        background-color: #2b2b2b;
+        color: #dcdcdc;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .header {
+        background-color: #dc3545;
+        padding: 15px;
+        text-align: center;
+        color: white;
+    }
+    
+    .main-container {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+    }
+    
+    .left-section {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        flex: 1;
+    }
+    
+    .right-section {
+        flex: 1;
+    }
+    
+    .left-panel {
+        width: 100%;
+        background-color: #3a3a3a;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    
+    .right-panel {
+        width: 100%;
+        background-color: #3a3a3a;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    /* Reset list padding inside day cards so trainer list aligns like couples list */
+    .day-card ul { list-style: none; padding: 0; margin: 0; }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        align-items: center;
+    }
+
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+    
+    input[type="text"] {
+        background-color: #2b2b2b;
+        min-width: 200px;
+        border: 1px solid #555;
+        color: #dcdcdc;
+        padding: 8px;
+        border-radius: 4px;
+        width: 100%;
+        box-sizing: border-box;
+        flex: auto;
+    }
+    input[name="dance_class_stt"] {
+        min-width: 60px;
+    }
+    
+    input[name="dance_class_lat"] {
+        min-width: 60px;
+
+    }
+
+    input[name="min_duration"] {
+        max-width: 80px;
+        min-width: 40px;
+        flex: 0 !important;
+    }
+    
+    button {
+        background-color: #0d6efd;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        width: 100%;
+    }
+    
+    .form-row button {
+        width: auto;
+        flex: 1;
+    }
+    
+    button:hover {
+        background-color: #0b5ed7;
+    }
+    .couples-list {
+        background-color: #2b2b2b;
+        border-radius: 4px;
+        padding: 10px;
+        margin-top: 20px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .couple-item {
+        background-color: #3a3a3a;
+        padding: 10px;
+        margin-bottom: 8px;
+        border-radius: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .btn-delete {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+    .nav-link{
+        cursor: pointer;
+        color: #888;
+    }
+
+    .nav-link.active {
+        background-color: #0d6efd !important;
+        color: white !important;
+    }
+
+    .group-content {
+        display: None;
+    }
+
+    .group-content.active{
+        display: block;
+    }
+
+    .day-content {
+        display: None;
+    }
+
+    .day-content.active{
+        display: block;
+    }
+    
+    /* Toast container */
+    .toast-container {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 9999;
+    }
+    
+    .toast {
+        min-width: 250px;
+        background-color: #3a3a3a;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        margin-bottom: 10px;
+    }
+    
+    .toast-header {
+        background-color: #2b2b2b;
+        color: #dcdcdc;
+        border-bottom: 1px solid #555;
+        padding: 8px 12px;
+        border-radius: 4px 4px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .toast-body {
+        padding: 12px;
+        color: #dcdcdc;
+    }
+    
+    .toast-warning .toast-header {
+        background-color: #856404;
+        color: #ffc107;
+        border-bottom-color: #ffc107;
+    }
+    
+    .toast-success .toast-header {
+        background-color: #155724;
+        color: #28a745;
+        border-bottom-color: #28a745;
+    }
+    
+    .toast .btn-close {
+        background-color: transparent;
+        border: none;
+        color: inherit;
+        font-size: 20px;
+        cursor: pointer;
+        opacity: 0.7;
+    }
+    
+    .toast .btn-close:hover {
+        opacity: 1;
+    }
+    .time-window { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 12px 0; }
+    .time-block { background: #3a3a3a; border-radius: 8px; padding: 12px 14px; text-align: center; }
+    .time-title { color: #dcdcdc; font-weight: 700; margin: 0 0 8px; }
+    .time-input-wrap { display: flex; align-items: center; gap: 12px; justify-content: center; }
+    .time-input-wrap input[type="time"] {
+    background: #2b2b2b; border: 1px solid #555; color: #dcdcdc;
+    border-radius: 6px; padding: 10px 12px; width: 140px; text-align: center;
+    }
+    .time-buttons { display: flex; gap: 6px; }
+    .time-buttons .btn { padding: 8px 12px; }
+
+    /* Trainer UI enhancements */
+    .trainer-list {
+        background-color: #2b2b2b;
+        border-radius: 8px;
+        padding: 10px;
+        margin-top: 12px;
+    }
+    .trainer-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        background-color: #3a3a3a;
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+    }
+    .trainer-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .avatar-sm {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background-color: #1e7db8;
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 13px;
+    }
+    .trainer-name {
+        font-weight: 600;
+        color: #dcdcdc;
+    }
+    .focus-badge {
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+    .focus-stt { background-color: #0d6efd33; color: #7ab8ff; border: 1px solid #0d6efd55; }
+    .focus-lat { background-color: #dc354533; color: #ff9aa7; border: 1px solid #dc354555; }
+    .focus-sl  { background-color: #6f42c133; color: #c5a7ff; border: 1px solid #6f42c155; }
+    .time-chip {
+        padding: 4px 8px;
+        border-radius: 6px;
+        background-color: #2b2b2b;
+        border: 1px solid #555;
+        color: #bdbdbd;
+        font-size: 12px;
+    }
+    .lesson-chip {
+        padding: 4px 8px;
+        border-radius: 6px;
+        background-color: #2b2b2b;
+        border: 1px solid #555;
+        color: #bdbdbd;
+        font-size: 12px;
+    }
+    .assign-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap; /* allow wrapping so button can move below */
+            margin-top: 20px; /* match couple-list spacing */
+            width: 100%; /* span full day-card content width */
+            box-sizing: border-box;
+            background-color: #2b2b2b; /* match couple-list background */
+            border-radius: 4px; /* match couple-list radius */
+            padding: 10px; /* match couple-list padding */
+            justify-content: flex-start; /* avoid pushing items out */
+        }
+        .assign-row .assign-fields {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1 1 auto;
+            flex-wrap: nowrap; /* keep select + both times on one line */
+            min-width: 0; /* allow content to shrink */
+            overflow-x: auto; /* prevent wrap; allow scroll if too narrow */
+        }
+        .assign-row .form-select {
+            background-color: #2b2b2b;
+            border: 1px solid #555;
+            color: #dcdcdc;
+            display: inline-block;
+            min-width: 150px; /* tighter minimum to help fit */
+            flex: 1 1 100px; /* grow/shrink within row */
+            white-space: nowrap;
+        }
+        .assign-row input[type="time"] {
+            background-color: #2b2b2b;
+            border: 1px solid #555;
+            color: #dcdcdc;
+            width: 100px;
+            flex: 0 1 100px; /* narrower to keep on one line */
+        }
+        .assign-row .btn {
+            flex: 1 0 100%; /* force to next row and span width */
+            width: 100%;    
+            margin-top: 6px; /* spacing from inputs */
+        }
+        .assign-row .small-label { white-space: nowrap; color: #999; font-size: 12px; margin: 0 6px; }
+
+    /* Responsive Design for Mobile Devices */
+    @media (max-width: 768px) {
+        /* Stack main sections vertically on small screens */
+        .main-container {
+            flex-direction: column;
+            padding: 10px;
+            gap: 15px;
+        }
+        
+        .left-section,
+        .right-section {
+            width: 100%;
+        }
+        
+        /* Reduce padding on panels */
+        .left-panel,
+        .right-panel {
+            padding: 15px;
+        }
+        
+        /* Make navigation tabs scrollable horizontally */
+        .nav {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .nav-item {
+            flex-shrink: 0;
+        }
+        
+        .nav-link {
+            font-size: 14px;
+            padding: 8px 12px;
+            white-space: nowrap;
+        }
+        
+        /* Make form rows stack vertically */
+        .form-row {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .form-row button {
+            width: 100%;
+        }
+        
+        .form-group {
+            width: 100%;
+        }
+        
+        /* Adjust input fields for mobile */
+        input[type="text"] {
+            min-width: 100%;
+            font-size: 16px; /* Prevent zoom on iOS */
+        }
+        
+        input[name="dance_class_stt"],
+        input[name="dance_class_lat"] {
+            min-width: 80px;
+            flex: 1;
+        }
+        
+        input[name="min_duration"] {
+            max-width: 100px;
+            min-width: 60px;
+        }
+        
+        /* Adjust couple items for better mobile display */
+        .couple-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px;
+        }
+        
+        .couple-item > div {
+            width: 100%;
+            word-wrap: break-word;
+        }
+        
+        .couple-item form {
+            width: 100%;
+        }
+        
+        .btn-delete {
+            width: 100%;
+        }
+        
+        /* Adjust header */
+        .header {
+            padding: 12px;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+        }
+        
+        /* Reduce list height on mobile */
+        .couples-list {
+            max-height: 300px;
+        }
+        
+        /* Make labels stack better */
+        .form-group label {
+            font-size: 14px;
+        }
+        
+        /* Toast positioning for mobile */
+        .toast-container {
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+        }
+        
+        .toast {
+            min-width: auto;
+            width: 100%;
+        }
+        
+        /* Better button spacing on mobile */
+        button {
+            padding: 12px 16px;
+            font-size: 14px;
+        }
+        .time-window {
+                grid-template-columns: 1fr;
+        }
+    }
+    
+    /* Extra small devices (phones in portrait, less than 576px) */
+    @media (max-width: 576px) {
+        .header h1 {
+            font-size: 1.2rem;
+        }
+        
+        .left-panel h2,
+        .right-panel h2 {
+            font-size: 1.3rem;
+        }
+        
+        .nav-link {
+            font-size: 12px;
+            padding: 6px 10px;
+        }
+        
+        input[type="text"] {
+            font-size: 16px;
+            padding: 10px;
+        }
+        
+        button {
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+        
+        .couple-item {
+            font-size: 14px;
+        }
+        
+        /* Adjust editable spans for mobile */
+        /* .editable-couple,
+        .editable-couple-dance-class-stt,
+        .editable-couple-dance-class-lat,
+        .editable-trainer,
+        .editable-trainer-focus,
+        .editable-time-duration {
+            display: inline-block;
+            min-width: 30px;
+        } */
+    }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Dance Calendar Optimizer</h1>
+    </div>
+    
+    <!-- Toast Notifications -->
+    {% if messages %}
+    <div class="toast-container" aria-live="polite" aria-atomic="true">
+        {% for message in messages %}
+        <div class="toast toast-{{ message.tags }}" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">{% if message.tags == 'success' %}✓ Success{% elif message.tags == 'warning' %}⚠ Warning{% else %}Info{% endif %}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                {{ message }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="main-container">
+        <!-- Left section: Couples and Trainers stacked vertically -->
+        <div class="left-section">
+            <div class="left-panel">
+                <h2>Couples & Groups</h2>
+                <nav aria-label="Group Navigation">
+                    <ul class="nav justify-content-center">
+                        {% for group in groups %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if forloop.first %}active{% endif %}"
+                            data-group-id="{{ group.id }}"
+                            id="tab-{{ group.id }}">{{ group.name }}</a>
+                        </li>
+                        {% empty %}
+                        <li class="nav-item">
+                            <span class="nav-link" style="color: #888;">No Groups</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <form method="POST" action="{% url 'manage_groups' %}" style="margin: 10px 0;;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-success">Manage Groups</button>
+                    </form>
+                </nav>
+                <!-- Content for each group -->
+                {% for group in groups %}
+                <div class="group-content {% if forloop.first%}active{% endif %}" id="group-{{ group.id}}">
+                    <!-- list of couples -->
+                    <div class="couples-list" style="margin-bottom: 10px;">
+                        {% for couple in group.couples.all %}
+                        <div class="couple-item">
+                            <div>
+                                <span
+                                contenteditable="true"
+                                data-couple-id="{{ couple.id }}"
+                                data-original="{{ couple.name }}"
+                                class="editable-couple"
+                                title="Click to edit; Enter to save">   
+                                {{ couple.name }}
+                            </span>
+                            <span style="color: #888; margin-left: 12px; font-size: 13px; margin-bottom: 0;">STT: </span>
+                                <span style="color: #888; margin-left: 0px; font-size: 15px; margin-bottom: 0;"
+                                contenteditable="true"
+                                data-couple-id="{{ couple.id }}"
+                                data-original="{{ couple.dance_class_stt}}"
+                                class="editable-couple-dance-class-stt"
+                                title="Click to edit; Enter to save">
+                                {{ couple.dance_class_stt }}
+                            </span>
+                            <span style="color: #888; margin-left: 12px; font-size: 13px; margin-bottom: 0;">LAT: </span>
+                                <span style="color: #888; margin-left: 0px; font-size: 15px; margin-bottom: 0;"
+                                contenteditable="true"
+                                data-couple-id="{{ couple.id }}"
+                                data-original="{{ couple.dance_class_lat}}"
+                                class="editable-couple-dance-class-lat"
+                                title="Click to edit; Enter to save">
+                                {{ couple.dance_class_lat }}
+                            </span>
+                                <!--<span style="color: #888; margin-left: 10px; font-size: 15px; margin-bottom: 0;"
+                                contenteditable="true"
+                                data-couple-id="{{ couple.id }}"
+                                data-original="{{ couple.min_duration }}"
+                                class="editable-time-duration"
+                                title="Click to edit; Enter to save">{{ couple.min_duration }}</span>
+                                <span style="color: #888; margin-left: 0px; font-size: 12px;">min</span>
+                                -->
+                            </div>
+
+                            <!-- Delete form for this couple -->
+                            <form method="POST" action="{% url 'delete_couple' couple.id %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-delete">Delete</button>
+                            </form>
+                        </div>
+                        {% empty %}
+                        <p style="color: #888; text-align: center;">No Couples Added</p>
+                        {% endfor %}
+                    </div>
+                
+                <!-- Form to add a couple to the specific group -->
+                    <form method="POST" action="{% url 'add_couple' %}" class="add-couple-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="group_id" value="{{ group.id }}">
+
+                        <div class="assign-row">
+                            <div class="assign-fields" style="flex: 1 1 150px; min-width: 0;">
+                                <input type="text" name="couple_name" placeholder="Couple Name" required style="flex: 1 1 150px; min-width: 150px;">
+                            </div>
+                            <div class="assign-fields" style="gap: 8px; flex: 0 1 auto;">
+                                <span class="small-label">Class STT:</span>
+                                <input type="text" name="dance_class_stt" style="min-width: 80px; max-width: 120px; flex: 0 0 80px;">
+                                <span class="small-label">Class LAT:</span>
+                                <input type="text" name="dance_class_lat" style="min-width: 80px; max-width: 120px; flex: 0 0 80px;">
+                            </div>
+                            <button type="submit">Add Couple to {{ group.name }}</button>
+                        </div>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="left-panel">
+                <h2>Trainers</h2>
+            
+            <!-- Form to add trainer -->
+            <form method="POST" action="{% url 'add_trainer'  %}">
+                <div class="assign-row">
+                {% csrf_token %}
+
+                <div class="assign-fieldsstyle="display: flex; align-items: center; gap: 8px;">
+                    <input type="text" name="trainer_name" placeholder="Trainer Name" style="max-width: 150px;"required>
+                    <label style="margin-left: 12px; margin-bottom: 0; margin-top: 0;">Trainer Focus (STT, LAT, S&L): </label>
+                    <input type="text" name="trainer_focus" style="min-width: 50px; max-width: 50px;" placeholder="S&L" required> 
+                </div>
+                <button type="submit" >Add Trainer</button>
+                </div>
+            </form>
+
+            <!-- List of Trainers -->
+            <div class="couples-list">
+                {% for trainer in trainers %}
+                <div class="couple-item">
+                    <div>
+                    <span
+                    contenteditable="true"
+                    data-trainer-id="{{ trainer.id }}"
+                    data-original="{{ trainer.name }}"
+                    class="editable-trainer"
+                    title="Click to edit; Enter to save"
+                    >{{ trainer.name }}</span>
+                    {% if trainer.focus %}
+                        {% if trainer.focus|upper == "STT" %}
+                            <span class="focus-badge focus-stt editable-trainer-focus"
+                                    contenteditable="true"
+                                    data-trainer-id="{{ trainer.id }}"
+                                    data-original="{{ trainer.focus }}"
+                                    title="Click to edit; Enter to save">{{ trainer.focus }}</span>
+                        {% elif trainer.focus|upper == "LAT" %}
+                            <span class="focus-badge focus-lat editable-trainer-focus"
+                                    contenteditable="true"
+                                    data-trainer-id="{{ trainer.id }}"
+                                    data-original="{{ trainer.focus }}"
+                                    title="Click to edit; Enter to save">{{ trainer.focus }}</span>
+                        {% else %}
+                            <span class="focus-badge focus-sl editable-trainer-focus"
+                                    contenteditable="true"
+                                    data-trainer-id="{{ trainer.id }}"
+                                    data-original="{{ trainer.focus }}"
+                                    title="Click to edit; Enter to save">{{ trainer.focus }}</span>
+                        {% endif %}
+                    {% endif %}
+                    </div>
+                    <!-- Delete form for this trainer -->
+                    <form method="POST" action="{% url 'delete_trainer' trainer.id %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-delete">Delete</button>
+                    </form>
+                </div>
+                {% empty %}
+                <p style="color: #888; text-align: center;">No Trainers Added</p>
+                {% endfor %}
+            </div>
+            </div>
+        </div>
+        
+        <!-- Right section: Days Navigation -->
+        <div class="right-section">
+            <div class="right-panel">
+                <h2>Days</h2>
+                <nav aria-label="Day Navigation">
+                    <ul class="nav justify-content-center">
+                        {% for day in days %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if forloop.first %}active{% endif %}"
+                            data-day-id="{{ day.id }}"
+                            id="tab-day-{{ day.id }}">{{ day.name }}</a>
+                        </li>
+                        {% empty %}
+                        <li class="nav-item">
+                            <span class="nav-link" style="color: #888;">No Days</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <form method="POST" action="{% url 'manage_days'%}" style="margin: 10px 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-success">Manage Days</button>
+                    </form>
+                </nav>
+                <!-- Content for each day -->
+                {% for day in days %}
+                <div class="day-content {% if forloop.first%}active{% endif %}" id="day-{{ day.id }}"> 
+                    <div class="day-card" data-day-id="{{ day.id }}">
+                        <ul>
+                            <div class="time-window">
+                                <div class="time-block">
+                                    <p class="time-title">Start Time</p>
+                                    <div class="time-input-wrap">
+                                        <input type="time"
+                                            id="start-{{ day.id }}"
+                                            name="start_time"
+                                            value="{{ day.start_time|time:'H:i' }}"
+                                            step="900">
+                                        <div class="time-buttons">
+                                            <button type="button" class="btn btn-sm btn-primary time-step" data-target="start-{{ day.id }}" data-delta="15">▲</button>
+                                            <button type="button" class="btn btn-sm btn-primary time-step" data-target="start-{{ day.id }}" data-delta="-15">▼</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="time-block">
+                                    <p class="time-title">End Time</p>
+                                    <div class="time-input-wrap">
+                                        <input type="time"
+                                            id="end-{{ day.id }}"
+                                            name="end_time"
+                                            value="{{ day.end_time|time:'H:i' }}"
+                                            step="900">
+                                        <div class="time-buttons">
+                                            <button type="button" class="btn btn-sm btn-primary time-step" data-target="end-{{ day.id }}" data-delta="15">▲</button>
+                                            <button type="button" class="btn btn-sm btn-primary time-step" data-target="end-{{ day.id }}" data-delta="-15">▼</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trainer-list">
+                                {% for trainer in day.trainers.all %}
+                                <div class="trainer-card">
+                                    <div class="trainer-meta">
+                                        <!-- <span class="avatar-sm">{{ trainer.name|slice:":1" }}</span> -->
+                                        <span class="trainer-name editable-trainer"
+                                              contenteditable="true"
+                                              data-trainer-id="{{ trainer.id }}"
+                                              data-original="{{ trainer.name }}"
+                                              title="Click to edit; Enter to save">
+                                              {{ trainer.name }}
+                                        </span>
+                                        {% if trainer.focus %}
+                                            {% if trainer.focus|upper == "STT" %}
+                                                <span class="focus-badge focus-stt editable-trainer-focus"
+                                                      contenteditable="true"
+                                                      data-trainer-id="{{ trainer.id }}"
+                                                      data-original="{{ trainer.focus }}"
+                                                      title="Click to edit; Enter to save">{{ trainer.focus }}</span>
+                                            {% elif trainer.focus|upper == "LAT" %}
+                                                <span class="focus-badge focus-lat editable-trainer-focus"
+                                                      contenteditable="true"
+                                                      data-trainer-id="{{ trainer.id }}"
+                                                      data-original="{{ trainer.focus }}"
+                                                      title="Click to edit; Enter to save">{{ trainer.focus }}</span>
+                                            {% else %}
+                                                <span class="focus-badge focus-sl editable-trainer-focus"
+                                                      contenteditable="true"
+                                                      data-trainer-id="{{ trainer.id }}"
+                                                      data-original="{{ trainer.focus }}"
+                                                      title="Click to edit; Enter to save">{{ trainer.focus }}</span>
+                                            {% endif %}
+                                        {% endif %}
+                                        <span class="time-chip">
+                                            <span
+                                            class="editable-start-time"
+                                            contenteditable="true"
+                                            data-trainer-id = "{{ trainer.id}}"
+                                            data-day-id="{{ day.id }}"
+                                            data-original = "{{ day|trainer_start_for_day:trainer|time:'H:i' }}"
+                                            title="Click to edit; Enter to save">
+                                            {{ day|trainer_start_for_day:trainer|time:'H:i' }} 
+                                            </span>
+                                            – 
+                                            <span 
+                                            class="editable-end-time"
+                                            contenteditable="true"
+                                            data-trainer-id = "{{ trainer.id }}"
+                                            data-day-id = "{{ day.id}}"
+                                            data-original="{{ day|trainer_end_for_day:trainer|time:'H:i' }}"
+                                            title="Click to edit; Enter to save">
+                                            {{ day|trainer_end_for_day:trainer|time:'H:i' }}
+                                            </span>
+                                        </span>
+                                    </div>
+                                    {% if trainer.group_lesson.all %}
+                                    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:0px;">
+                                        {% for lesson in trainer.group_lesson.all %}
+                                            {% if lesson.day and lesson.day.id == day.id %}
+                                            <form method="POST" action="{% url 'delete_group_lesson' lesson.id %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="trainer_id" value="{{ trainer.id }}" />
+                                                <span class="lesson-chip">Lesson: {{ lesson.time_interval_start|time:'H:i' }} – {{ lesson.time_interval_end|time:'H:i' }}
+                                                    <button class="btn-close" type="submit"></button>
+                                                </span>
+                                            </form>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <div style="color:#888; font-size:12px; margin-top:6px;">No lessons</div>
+                                    {% endif %}
+                                    <form method="POST" action="{% url 'delete_trainer_from_day' trainer.id %}" style="margin: 0;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="day_id" value="{{ day.id }}" />
+                                        <button type="submit" class="btn-delete">Remove</button>
+                                    </form>
+                                </div>
+                                {% empty %}
+                                <p style="color: #888; text-align: center;">No trainers assigned to this day</p>
+                                {% endfor %}
+                            </div>
+
+                            <form method="POST" action="{% url 'add_trainer_to_day'  %}">
+                                {% csrf_token %}
+                                <div class="assign-row">
+                                    <div class="assign-fields">
+                                        <select class="form-select" name="trainer_id" aria-label="Select trainer">
+                                            <option value="" selected disabled>Select trainer…</option>
+                                            {% for t in trainers %}
+                                                <option value="{{ t.id }}">{{ t.name }} ({{ t.focus }})</option>
+                                            {% endfor %}
+                                        </select>
+                                        <label class="small-label">Time of the Group Lesson:</label>
+                                        <input type="time" name="start_time" placeholder="--:--" step="900"/>
+                                        <input type="time" name="end_time" placeholder="--:--" step="900"/>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Add Trainer</button>
+                                </div>
+                                <input type="hidden" name="day_id" value="{{ day.id }}"/>
+                            </form>
+                            </div>
+                            {% if day.couples.all %}
+                            <div class="couples-list" style="margin-bottom: 10px;">
+                            {% for couple in day.couples.all %}
+                            <div class="couple-item" draggable="false"
+                            data-couple-id="{{ couple.id }}" data-day-id="{{ day.id }}">
+                                <div>
+                                <span
+                                    contenteditable="true"
+                                    data-couple-id="{{ couple.id }}"
+                                    data-original="{{ couple.name }}"
+                                    class="editable-couple"
+                                    title="Click to edit; Enter to save"
+                                >{{ couple.name }}</span>
+                                <span
+                                contenteditable="true"
+                                data-couple-id="{{ couple.id }}"
+                                data-original="{{ couple.min_duration}}"
+                                class="editable-time-duration"
+                                title="Click to edit; Enter to save"
+                                style="color: #888; margin-left: 10px; font-size: 15px;">{{ couple.min_duration }}</span>
+                                <span style="color: #888; margin-left: 0px; font-size: 12px;">min</span>
+                                </div>
+                            <form method="POST" action="{% url 'remove_couple_from_day' couple.id %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="day_id" value="{{ day.id }}">
+                                <input type="hidden" name="page" value="{{ page_obj.number }}">
+                                <button type="submit" class="btn-delete">Remove</button>
+                            </form>
+                            </div>
+                            {% endfor %}
+                            </div>
+                            <form method="POST" action="{% url 'add_couple' %}" class="add-couple-form add-to-day-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="day_id" value="{{ day.id }}">
+                                <div class="assign-row">
+                                    <div class="assign-fields">
+                                        <input type="text" name="couple_name" placeholder="Couple Name" required style="flex: 1 1 150px; min-width: 120px;">
+                                        <label class="small-label">Class STT:</label>
+                                        <input type="text" name="dance_class_stt" style="flex: 0 1 80px; min-width: 60px;">
+                                        <label class="small-label">Class LAT:</label>
+                                        <input type="text" name="dance_class_lat" style="flex: 0 1 80px; min-width: 60px;">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Add Couple to {{ day.name }}</button>
+                                </div>
+                            </form>
+                            {% else %}
+                            <div class="couples-list" style="margin-bottom: 10px;">
+                                <p style="color: #888; text-align: center;">No Couples Added</p>
+                            </div>
+                            <form method="POST" action="{% url 'add_couple' %}" class="add-couple-form add-to-day-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="day_id" value="{{ day.id }}">
+                                <div class="assign-row">
+                                    <div class="assign-fields">
+                                        <input type="text" name="couple_name" placeholder="Couple Name" required style="flex: 1 1 150px; min-width: 120px;">
+                                        <label class="small-label">Class STT:</label>
+                                        <input type="text" name="dance_class_stt" style="flex: 0 1 80px; min-width: 60px;">
+                                        <label class="small-label">Class LAT:</label>
+                                        <input type="text" name="dance_class_lat" style="flex: 0 1 80px; min-width: 60px;">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Add Couple to {{ day.name }}</button>
+                                </div>
+                            </form>
+                            {% endif %}
+                        </ul>
+                    </div>
+                
+                {% endfor %}
+            </div>
+            <div class="right-panel" style="margin-top: 15px; align-items: center;">
+                <form method="GET" action="{% url 'schedule:make_schedule' %}">
+                    <button type="submit">Make the Schedule</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Add click event listeners to all group tabs
+    document.addEventListener('DOMContentLoaded', function() {
+        const groupTabs = document.querySelectorAll('.nav-link[data-group-id]');
+        groupTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const groupId = this.getAttribute('data-group-id');
+                switchGroup(groupId);
+                // Save selected group to localStorage
+                localStorage.setItem('activeGroupId', groupId);
+            });
+        });
+        
+        // Add click event listeners to all day tabs
+        const dayTabs = document.querySelectorAll('.nav-link[data-day-id]');
+        dayTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const dayId = this.getAttribute('data-day-id');
+                switchDay(dayId);
+                // Save selected day to localStorage
+                localStorage.setItem('activeDayId', dayId);
+            });
+        });
+        
+        // Restore previously selected group from localStorage
+        const savedGroupId = localStorage.getItem('activeGroupId');
+        if (savedGroupId) {
+            const savedTab = document.getElementById('tab-' + savedGroupId);
+            if (savedTab) {
+                switchGroup(savedGroupId);
+            }
+        }
+        
+        // Restore previously selected day from localStorage
+        const savedDayId = localStorage.getItem('activeDayId');
+        if (savedDayId) {
+            const savedDayTab = document.getElementById('tab-day-' + savedDayId);
+            if (savedDayTab) {
+                switchDay(savedDayId);
+            }
+        }
+        
+        // Save active group when submitting add couple form
+        const addCoupleForms = document.querySelectorAll('.add-couple-form');
+        addCoupleForms.forEach(form => {
+            form.addEventListener('submit', function() {
+                const groupId = this.querySelector('input[name="group_id"]');
+                if (groupId) {
+                    localStorage.setItem('activeGroupId', groupId.value);
+                }
+                const dayId = this.querySelector('input[name="day_id"]');
+                if (dayId) {
+                    localStorage.setItem('activeDayId', dayId.value);
+                }
+            });
+        });
+        
+        // Initialize and show all toasts
+        const toastElements = document.querySelectorAll('.toast');
+        toastElements.forEach(toastEl => {
+            const toast = new bootstrap.Toast(toastEl, {
+                autohide: true,
+                delay: 2000  // Auto-hide after 2 seconds
+            });
+            toast.show();
+        });
+    })
+    
+    function switchGroup(groupId) {
+        // Hide all group contents
+        const allContents = document.querySelectorAll('.group-content');
+        allContents.forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // Remove active class from all tabs
+        const allTabs = document.querySelectorAll('.nav-link[data-group-id]');
+        allTabs.forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Show selected group content
+        document.getElementById('group-' + groupId).classList.add('active');
+        
+        // Activate selected tab
+        document.getElementById('tab-' + groupId).classList.add('active');
+        
+        // Save to localStorage
+        localStorage.setItem('activeGroupId', groupId);
+    }
+    
+    function switchDay(dayId) {
+        // Hide all day contents
+        const allDayContents = document.querySelectorAll('.day-content');
+        allDayContents.forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // Remove active class from all day tabs
+        const allDayTabs = document.querySelectorAll('.nav-link[data-day-id]');
+        allDayTabs.forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Show selected day content
+        document.getElementById('day-' + dayId).classList.add('active');
+        
+        // Activate selected day tab
+        document.getElementById('tab-day-' + dayId).classList.add('active');
+        
+        // Save to localStorage
+        localStorage.setItem('activeDayId', dayId);
+    }
+    // Inline edit: save couple name on Enter or blur
+        (function() {
+            const spans = document.querySelectorAll('.editable-couple');
+            const csrftoken = (function() {
+                const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                return el ? el.value : null;
+            })();
+
+            function saveChange(span) {
+                const coupleId = span.getAttribute('data-couple-id');
+                const newName = span.textContent.trim();
+                const original = span.getAttribute('data-original');
+                if (!coupleId || newName === original || newName.length === 0) {
+                    span.textContent = original; // revert empty
+                    return;
+                }
+                span.classList.add('saving');
+                fetch(`/couples/update/${coupleId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken || '',
+                    },
+                    body: JSON.stringify({ name: newName })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Failed to save');
+                    return res.json();
+                })
+                .then(data => {
+                    span.setAttribute('data-original', data.name);
+                })
+                .catch(() => {
+                    // revert on error
+                    span.textContent = original;
+                    alert('Could not save change.');
+                })
+                .finally(() => {
+                    span.classList.remove('saving');
+                });
+            }
+
+            spans.forEach(span => {
+                span.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        span.blur();
+                    }
+                });
+                span.addEventListener('blur', () => saveChange(span));
+            });
+        })();
+        
+        (function() {
+            const spans = document.querySelectorAll('.editable-couple-dance-class-stt');
+            const csrftoken = (function() {
+                const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                return el ? el.value : null;
+            })();
+
+            function saveChange(span) {
+                const coupleId = span.getAttribute('data-couple-id');
+                const newDanceClassStt = span.textContent.trim();
+                const original = span.getAttribute('data-original');
+
+                if (!coupleId || newDanceClassStt === original || newDanceClassStt.length === 0) {
+                    span.textContent = original; // revert empty
+                    return;
+                }
+                span.classList.add('saving');
+                fetch(`/couples/update/${coupleId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken || '',
+                    },
+                    body: JSON.stringify({ dance_class_stt: newDanceClassStt })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Failed to save');
+                    return res.json();
+                })
+                .then(data => {
+                    span.setAttribute('data-original', data.dance_class_stt);
+                })
+                .catch(() => {
+                    // revert on error
+                    span.textContent = original;
+                    alert('Could not save change.');
+                })
+                .finally(() => {
+                    span.classList.remove('saving');
+                });
+            }
+            
+            spans.forEach(span => {
+                span.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        span.blur();
+                    }
+                });
+                span.addEventListener('blur', () => saveChange(span));
+            });
+        })();
+        (function() {
+            const spans = document.querySelectorAll('.editable-couple-dance-class-lat');
+            const csrftoken = (function() {
+                const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                return el ? el.value : null;
+            })();
+
+            function saveChange(span) {
+                const coupleId = span.getAttribute('data-couple-id');
+                const newDanceClassLat = span.textContent.trim();
+                const original = span.getAttribute('data-original');
+
+                if (!coupleId || newDanceClassLat === original || newDanceClassLat.length === 0) {
+                    span.textContent = original; // revert empty
+                    return;
+                }
+                span.classList.add('saving');
+                fetch(`/couples/update/${coupleId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken || '',
+                    },
+                    body: JSON.stringify({ dance_class_lat: newDanceClassLat })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Failed to save');
+                    return res.json();
+                })
+                .then(data => {
+                    span.setAttribute('data-original', data.dance_class_lat);
+                })
+                .catch(() => {
+                    // revert on error
+                    span.textContent = original;
+                    alert('Could not save change.');
+                })
+                .finally(() => {
+                    span.classList.remove('saving');
+                });
+            }
+            
+            spans.forEach(span => {
+                span.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        span.blur();
+                    }
+                });
+                span.addEventListener('blur', () => saveChange(span));
+            });
+        })();
+        (function() {
+            const spans = document.querySelectorAll('.editable-trainer');
+            const csrftoken = (function() {
+                const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                return el ? el.value : null;
+            })();
+
+            function saveChange(span) {
+                const trainerId = span.getAttribute('data-trainer-id');
+                const newName = span.textContent.trim();
+                const original = span.getAttribute('data-original');
+                if (!trainerId || newName === original || newName.length === 0) {
+                    span.textContent = original; // revert empty
+                    return;
+                }
+                span.classList.add('saving');
+                fetch(`/trainers/update/${trainerId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken || '',
+                    },
+                    body: JSON.stringify({ name: newName })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Failed to save');
+                    return res.json();
+                })
+                .then(data => {
+                    span.setAttribute('data-original', data.name);
+                })
+                .catch(() => {
+                    // revert on error
+                    span.textContent = original;
+                    alert('Could not save change.');
+                })
+                .finally(() => {
+                    span.classList.remove('saving');
+                });
+            }
+
+            spans.forEach(span => {
+                span.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        span.blur();
+                    }
+                });
+                span.addEventListener('blur', () => saveChange(span));
+            });
+        })();
+        (function() {
+            const spans = document.querySelectorAll('.editable-trainer-focus');
+            const csrftoken = (function() {
+                const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                return el ? el.value : null;
+            })();
+
+            function saveChange(span) {
+                const trainerId = span.getAttribute('data-trainer-id');
+                const newFocus = span.textContent.trim();
+                const original = span.getAttribute('data-original');
+                if (!trainerId || newFocus === original || newFocus.length === 0) {
+                    span.textContent = original; // revert empty
+                    return;
+                }
+                span.classList.add('saving');
+                fetch(`/trainers/update/${trainerId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken || '',
+                    },
+                    body: JSON.stringify({ focus: newFocus })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('Failed to save');
+                    return res.json();
+                })
+                .then(data => {
+                    span.setAttribute('data-original', data.focus);
+                })
+                .catch(() => {
+                    // revert on error
+                    span.textContent = original;
+                    alert('Could not save change.');
+                })
+                .finally(() => {
+                    span.classList.remove('saving');
+                });
+            }
+
+            spans.forEach(span => {
+                span.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        span.blur();
+                    }
+                });
+                span.addEventListener('blur', () => saveChange(span));
+            });
+        })();
+    
+    (function() {
+        const spans = document.querySelectorAll('.editable-start-time');
+        const csrftoken = (function() {
+            const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            return el ? el.value : null;
+        })();
+        function saveChange(span) {
+            const trainerId = span.getAttribute('data-trainer-id');
+            const dayId = span.getAttribute('data-day-id');
+            const newStartTime = span.textContent.trim();
+            const original = span.getAttribute('data-original');
+
+            if (!trainerId || newStartTime === original || newStartTime.length === 0) {
+                span.textContent = original;
+                return;
+            }
+            span.classList.add('saving');
+            fetch(`/trainers/update_trainer_time/${trainerId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken || '',
+                },
+                body: JSON.stringify({start_time: newStartTime, day_id: dayId})
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to save');
+                return res.json();
+            })
+            .then(data => {
+                span.setAttribute('data-original', data.start_time);
+            })
+            .catch(() => {
+                // revert on error
+                span.textContent = original;
+                alert('Could not save change.');
+            })
+            .finally(() => {
+                span.classList.remove('saving');
+            })
+
+        }
+
+        spans.forEach(span => {
+            span.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    span.blur();
+                }
+            });
+            span.addEventListener('blur', () => saveChange(span));
+        })
+    })();
+
+    (function() {
+        const spans = document.querySelectorAll('.editable-end-time');
+        const csrftoken = (function() {
+            const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            return el ? el.value : null;
+        })();
+        function saveChange(span) {
+            const trainerId = span.getAttribute('data-trainer-id');
+            const dayId = span.getAttribute('data-day-id');
+            const newEndTime = span.textContent.trim();
+            const original = span.getAttribute('data-original');
+            
+            if (!trainerId || newEndTime === original || newEndTime.length === 0) {
+                span.textContent = original;
+                return;
+            }
+
+            span.classList.add('saving');
+            fetch(`/trainers/update_trainer_time/${trainerId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken' : csrftoken || '',
+                },
+                body: JSON.stringify({end_time: newEndTime, day_id: dayId})
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to save');
+                return res.json();
+            })
+            .then(data => {
+                span.setAttribute('data-original', data.end_time);
+            })
+            .catch(() => {
+                // revert on error
+                span.textContent = original;
+                alert('Could not save change.');
+            })
+            .finally(() => {
+                span.classList.remove('saving');
+            })
+
+        }
+        spans.forEach(span => {
+            span.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    span.blur();   
+                }
+            });
+            span.addEventListener('blur', () => saveChange(span));
+        })
+    })();
+    // Handle confirmation for adding couples to days
+    document.addEventListener('DOMContentLoaded', function() {
+        const dayForms = document.querySelectorAll('.add-to-day-form');
+        
+        dayForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const coupleName = form.querySelector('input[name="couple_name"]').value.trim();
+                
+                if (!coupleName) {
+                    return; // Let default validation handle empty names
+                }
+                
+                // Get the day ID for this form
+                const dayId = form.querySelector('input[name="day_id"]').value;
+                
+                // Build a map of couples already in each day
+                const couplesInDays = {
+                    {% for day in days %}
+                    '{{ day.id }}': [
+                        {% for couple in day.couples.all %}
+                            '{{ couple.name|escapejs }}',
+                        {% endfor %}
+                    ],
+                    {% endfor %}
+                };
+                
+                // Check if couple is already in this day
+                if (couplesInDays[dayId] && couplesInDays[dayId].includes(coupleName)) {
+                    e.preventDefault();
+                    alert('Couple "' + coupleName + '" is already in this day!');
+                    return;
+                }
+                
+                // Check if couple exists in any group OR in any day
+                const existingCouples = [
+                    {% for group in groups %}
+                        {% for couple in group.couples.all %}
+                            '{{ couple.name|escapejs }}',
+                        {% endfor %}
+                    {% endfor %}
+                ];
+                
+                // Also include couples from all days
+                const couplesInAllDays = [];
+                Object.values(couplesInDays).forEach(couples => {
+                    couples.forEach(name => {
+                        if (!couplesInAllDays.includes(name)) {
+                            couplesInAllDays.push(name);
+                        }
+                    });
+                });
+                
+                const coupleExists = existingCouples.includes(coupleName) || couplesInAllDays.includes(coupleName);
+                
+                if (!coupleExists) {
+                    // Couple doesn't exist - check if dance class fields are filled
+                    e.preventDefault();
+                    
+                    const danceStt = form.querySelector('input[name="dance_class_stt"]').value.trim();
+                    const danceLat = form.querySelector('input[name="dance_class_lat"]').value.trim();
+                    
+                    if (!danceStt || !danceLat) {
+                        alert('Please enter both Class STT and Class LAT for the new couple!');
+                        return;
+                    }
+                    
+                    if (confirm('Couple "' + coupleName + '" doesn\'t exist. Do you want to create and add this new couple to the day?')) {
+                        // User confirmed - add hidden field and submit
+                        const confirmedInput = document.createElement('input');
+                        confirmedInput.type = 'hidden';
+                        confirmedInput.name = 'confirmed';
+                        confirmedInput.value = 'true';
+                        form.appendChild(confirmedInput);
+                        form.submit();
+                    }
+                }
+                // If couple exists, let the form submit normally (backend will add it)
+            });
+        });
+    });
+    function getCookie(name) {
+        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        return match ? match[2] : null;
+    }
+    
+    async function saveDayTime(dayId) {
+        const startInput = document.getElementById(`start-${dayId}`);
+        const endInput = document.getElementById(`end-${dayId}`);
+        if (!startInput || !endInput) return;
+        const payload = { start_time: startInput.value, end_time: endInput.value};
+        const res = await fetch(`/days/update_time/${dayId}/`, {
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            console.warn('Time save failed: ', data?.error || data);
+        }
+    }
+    
+    function adjustTime(id, deltaMinutes) {
+        const input = document.getElementById(id);
+        if (!input || !input.value) return;
+        const [h, m] = input.value.split(":").map(Number);
+        const date = new Date();
+        date.setHours(h, m + deltaMinutes, 0, 0);
+        const hh = String(date.getHours()).padStart(2, '0');
+        const mm = String(date.getMinutes()).padStart(2, '0');
+        input.value = `${hh}:${mm}`;
+        // Trigger change event to auto-save
+        input.dispatchEvent(new Event('change'));
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        // Attach save listeners to time inputs
+        document.querySelectorAll('[id^="start-"], [id^="end-"]').forEach(input => {
+            const dayId = input.id.split('-')[1];
+            input.addEventListener('change', () => saveDayTime(dayId));
+        });
+        
+        // Attach listeners to time step buttons
+        document.querySelectorAll('.time-step').forEach(btn => {
+            btn.addEventListener('click', () => {
+                adjustTime(btn.dataset.target, parseInt(btn.dataset.delta, 10));
+            });
+        });
+    }); 
+</script>
+</body>
+</html>
