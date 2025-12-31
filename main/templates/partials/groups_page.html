@@ -1,11 +1,20 @@
 {% for group in groups %}
 <div class="group-card" data-group-id="{{ group.id }}">
     <div class="group-header">
-        <h3 contenteditable="true"
-            data-group-id="{{ group.id }}"
-            data-original="{{ group.name }}"
-            class="editable-group-name"
-            title="Click to edit; Enter to save">{{ group.name }}</h3>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <h3 style="margin: 0; padding: 0;" contenteditable="true"
+                data-group-id="{{ group.id }}"
+                data-original="{{ group.name }}"
+                class="editable-group-name"
+                title="Click to edit; Enter to save">{{ group.name }}</h3>
+            <span class="small-label">Index:
+             <span contenteditable="true"
+                    data-group-id="{{ group.id }}"
+                    data-original="{{ group.index }}"
+                    class="editable-group-index"
+                    title="Click to edit; Enter to save">{{ group.index }}</span>     
+            </span>
+        </div>
         <form method="POST" action="{% url 'delete_group' group.id %}" style="margin: 0;">
             {% csrf_token %}
             <button type="submit" class="btn-delete"

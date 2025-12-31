@@ -25,7 +25,10 @@ class Couple(models.Model):
     dance_class_stt = models.CharField(max_length=100,)
     def __str__(self):
         return self.name
-    
+
+    def nlt(self):
+        return self.name, self.dance_class_stt, self.dance_class_lat
+
     def dancers_names(self):
         """Parse the couple name to extract individual dancer names"""
         name = str(self.name)
@@ -116,7 +119,7 @@ class Day(models.Model):
     
 class Group(models.Model):
     name = models.CharField(max_length=200)
-    primary = models.IntegerField()
+    index = models.IntegerField(default=0)  # For sorting groups
     couples = []
     def __str__(self):
         return self.name
@@ -150,3 +153,11 @@ class TrainerDayAvailability(models.Model):
 
     def __str__(self):
         return f"{self.trainer.name} @ {self.day.name}: {self.start_time}-{self.end_time}"
+
+class DancersAvailability(models.Model):
+    dancer = models.ForeignKey('Dancer', on_delete=models.CASCADE, related_name='dancer_availabilities')
+    day = models.ForeignKey('Day', on_delete=models.CASCADE, related_name='dancer_availabilities')
+    availability = models.JSONField(default=list)  # Stores [True, False, True, ...]
+    
+    def __str__(self):
+        return f"{self.dancer.name} @ {self.day.name}: {self.availability}"

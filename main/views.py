@@ -443,6 +443,7 @@ def add_group(request):
     """ Add a new Group to the database """
     if request.method == 'POST':
         group_name = request.POST.get('group_name', '').strip()
+        group_index = request.POST.get('group_index', '').strip()
         
         # Check if group already exists (case-insensitive)
         if Group.objects.filter(name__iexact=group_name).exists():
@@ -451,10 +452,16 @@ def add_group(request):
         if not group_name:
             return redirect('/manage_groups/?error=Group name cannot be empty!')
         
+        # Parse group_index, default to 0 if empty or invalid
+        if group_index and group_index.isdigit():
+            index_value = int(group_index)
+        else:
+            index_value = 0
+        
         # Create and save the group 
         Group.objects.create(
             name=group_name,
-            primary=1,
+            index=index_value,
         )
         
         # Calculate which page the new group is on (2 groups per page)
@@ -466,7 +473,7 @@ def add_group(request):
     return redirect('/manage_groups/')
 
 def update_group_name(request, group_id):
-    """Update a group's name via AJAX (JSON)."""
+    """Update a group's name or index via AJAX (JSON)."""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
@@ -478,24 +485,35 @@ def update_group_name(request, group_id):
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
     incoming_name = payload.get('name')
+    incoming_index = payload.get('index')
     
-    if incoming_name is None:
-        return JsonResponse({'error': 'No name provided'}, status=400)
+    # Update name if provided
+    if incoming_name is not None:
+        new_name = str(incoming_name).strip()
+        if not new_name:
+            return JsonResponse({'error': 'Group name cannot be empty'}, status=400)
+        # Check if another group already has this name
+        if Group.objects.exclude(id=group.id).filter(name__iexact=new_name).exists():
+            return JsonResponse({'error': 'A group with this name already exists'}, status=409)
+        group.name = new_name
     
-    new_name = str(incoming_name).strip()
-    if not new_name:
-        return JsonResponse({'error': 'Group name cannot be empty'}, status=400)
+    # Update index if provided
+    if incoming_index is not None:
+        try:
+            new_index = int(incoming_index)
+            group.index = new_index
+        except (ValueError, TypeError):
+            return JsonResponse({'error': 'Group index must be a number'}, status=400)
     
-    # Check if another group already has this name
-    if Group.objects.exclude(id=group.id).filter(name__iexact=new_name).exists():
-        return JsonResponse({'error': 'A group with this name already exists'}, status=409)
+    if not incoming_name and not incoming_index:
+        return JsonResponse({'error': 'No changes provided'}, status=400)
     
-    group.name = new_name
     group.save()
 
     return JsonResponse({
         'id': group.id,
         'name': group.name,
+        'index': group.index,
     })
 
 def delete_group(request, group_id):

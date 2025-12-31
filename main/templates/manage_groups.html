@@ -107,6 +107,20 @@
             background: rgba(59, 130, 246, 0.1);
         }
 
+        .add-group-form input[name="group_index"] {
+            width: 60px !important;
+            min-width: 60px !important;
+            max-width: 60px !important;
+            flex: 0 0 auto !important;
+            text-align: center;
+        }
+
+        .add-group-form input[name="group_index"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
         .btn-add {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: white;
@@ -463,6 +477,10 @@
             <form method="POST" action="{% url 'add_group' %}" class="add-group-form">
                 {% csrf_token %}
                 <input type="text" name="group_name" class="auto-width-input" placeholder="New Group Name" required>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="small-label">Group Index: </span>
+                <input type="text" name="group_index">
+                </div> 
                 <button type="submit" class="btn-add">Add Group</button>
             </form>
 
@@ -1189,7 +1207,31 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(() => { h3.textContent = original; alert('Could not save change.'); });
       });
     });
+
+    // Inline editing for group index
+    scopeEl.querySelectorAll('.editable-group-index').forEach(span => {
+        span.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); span.blur(); } });
+        span.addEventListener('blur', () => {
+            const groupId = span.getAttribute('data-group-id');
+            const newIndex = span.textContent.trim();
+            const original = span.getAttribute('data-original');
+            if (!groupId || newIndex === original || newIndex.length === 0) {
+                span.textContent = original;
+                return;
+            }
+            fetch(`/groups/update/${groupId}/`, {
+                method: 'POST',
+                headers: {'Content-Type':'application/json', 'X-CSRFToken': csrftoken || ''},
+                body: JSON.stringify({index: newIndex})
+            })
+            .then(res => { if (!res.ok) throw new Error('Failed'); return res.json();})
+            .then(data => span.setAttribute('data-original', String(data.index)))
+            .catch(() => {span.textContent = original; alert('Could not save change.');});
+        })
+    })
   }
+
+  
 
   // Load a page via AJAX
   async function loadPage(page) {
