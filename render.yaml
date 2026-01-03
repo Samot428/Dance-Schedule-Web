@@ -10,7 +10,7 @@ services:
     plan: free
     branch: main  # or master, depending on your git branch
     buildCommand: bash build.sh
-    startCommand: cd DANCE_CALENDAR_WEB && gunicorn DANCE_CALENDAR_WEB.wsgi:application
+    startCommand: cd DANCE_CALENDAR_WEB && gunicorn DANCE_CALENDAR_WEB.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -24,6 +24,8 @@ services:
         fromDatabase:
           name: dance-calendar-db
           property: connectionString
+      - key: PYTHONPATH
+        value: /opt/render/project/src/DANCE_CALENDAR_WEB
 
 databases:
   # PostgreSQL Database
