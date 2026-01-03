@@ -5,6 +5,9 @@ set -o errexit
 echo "Installing dependencies..."
 pip install -r requirements.txt
 
+echo "Setting Python path..."
+export PYTHONPATH="${PWD}:${PYTHONPATH}"
+
 echo "Collecting static files..."
 python DANCE_CALENDAR_WEB/manage.py collectstatic --no-input
 
