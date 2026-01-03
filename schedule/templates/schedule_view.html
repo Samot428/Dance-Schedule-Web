@@ -961,6 +961,16 @@
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label" for="daysSort">Days</label>
+                        <select id="days" name="days_sort" class="form-select">
+                            <option value="all" selected>All Days</option>
+                            {% for day in days %}
+                            <option value="{{ day.name }}">{{ day.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label" for="availabilityFile">Load availability from</label>
                         <select id="availabilityFile" name="availability_file" class="form-select">
                             <option value="" selected>No file selected</option>

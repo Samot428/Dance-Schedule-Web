@@ -118,7 +118,7 @@ def read_dancers_availability(group, excel_file):
     return day_times, day_dancers_avail
 
 if __name__ == '__main__':
-    day_times, day_dancers_avail = read_dancers_availability('K1', 'IT MOŽNOSTI.xlsx')
+    day_times, day_dancers_avail = read_dancers_availability('K2', 'IT MOŽNOSTI.xlsx')
     for day in day_times:
         print(day, day_times[day], day_dancers_avail[day],sep='\n___________\n')
         
