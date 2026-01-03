@@ -6,6 +6,7 @@ psycopg2-binary==2.9.9  # PostgreSQL adapter for production
 
 # Excel file handling
 openpyxl==3.1.2
+pandas==2.2.0  # Required for reading Excel files
 
 # Production server
 gunicorn==21.2.0
