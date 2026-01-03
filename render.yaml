@@ -1,0 +1,33 @@
+# Render.com deployment configuration
+# https://render.com/docs/yaml-spec
+
+services:
+  # Web Service
+  - type: web
+    name: dance-calendar-web
+    env: python
+    region: oregon  # Change to your preferred region
+    plan: free
+    branch: main  # or master, depending on your git branch
+    buildCommand: bash build.sh
+    startCommand: cd DANCE_CALENDAR_WEB && gunicorn DANCE_CALENDAR_WEB.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DEBUG
+        value: False
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dance-calendar-db
+          property: connectionString
+
+databases:
+  # PostgreSQL Database
+  - name: dance-calendar-db
+    plan: free
+    databaseName: dance_calendar
+    user: dance_calendar_user
