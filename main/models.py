@@ -135,6 +135,7 @@ class Group(models.Model):
 
 class GroupLesson(models.Model):
     day = models.ForeignKey('Day', on_delete=models.CASCADE, related_name='group_lessons', null=True, blank=True)
+    groups = models.ManyToManyField('Group', related_name='group_lessons', blank=True)
     time_interval_start = models.TimeField(default=time(0, 0))
     time_interval_end = models.TimeField(default=time(0, 0))
 

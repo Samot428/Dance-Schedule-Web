@@ -98,8 +98,11 @@ def add_couple(request):
                 if page:
                     return redirect(f"/manage_groups/?page={page}")
                 return redirect('manage_groups')
+            if 'manage_days' in referer:
+                if page:
+                    return redirect(f"/manage_days/?page={page}")
+                return redirect('manage_days')
             return redirect('calendar_view')
-        
         # Check if couple is already in this group (if group_id is provided)
         if group_id:
             group = get_object_or_404(Group, id=group_id)
@@ -109,7 +112,10 @@ def add_couple(request):
                     if page:
                         return redirect(f"/manage_groups/?page={page}")
                     return redirect('manage_groups')
-                return redirect('calendar_view')
+                if 'manage_days' in referer:
+                    if page:
+                        return redirect(f"/manage_days/?page={page}")
+                    return redirect('manage_days')
         
         # Create and save the couple
         couple = Couple.objects.create(name=couple_name, min_duration=min_duration, dance_class_stt=dance_class_stt, dance_class_lat=dance_class_lat)
@@ -287,6 +293,7 @@ def add_trainer_to_day(request):
         day_id = request.POST.get('day_id')
         start_time = request.POST.get('start_time')
         end_time = request.POST.get('end_time')
+        g = request.POST.get('groups')
         if day_id and trainer_id:
             day = get_object_or_404(Day, id=day_id)
             trainer = get_object_or_404(Trainer, id=trainer_id)
@@ -324,17 +331,30 @@ def add_trainer_to_day(request):
                     if (start_obj < lesson.time_interval_end) and (end_obj > lesson.time_interval_start):
                         overlap = True
                         break
-
+                try:
+                    if ',' in g:
+                        aimed_groups = g.split(',')
+                    else:
+                        aimed_groups = []
+                        aimed_groups.append(g)
+                    ag = []
+                    for aim_group in aimed_groups:
+                        ag.append(Group.objects.get(name=aim_group.strip()))
+                except Exception as e:
+                    print(f'{e}')
+                    ag = Group.objects.all()
                 if overlap:
                     messages.warning(request, "This lesson overlaps an existing lesson for this trainer.")
                 else:
                     grouplesson = GroupLesson(day=day, time_interval_start=start_obj, time_interval_end=end_obj)
                     grouplesson.save()
+                    for x in ag:
+                        grouplesson.groups.add(x)
                     trainer.group_lesson.add(grouplesson)
                     trainer.save()
                     messages.success(request, f'Trainer "{trainer.name}" with group lesson added successfully!')     
             if not start_time or not end_time:
-                messages.success(request, f'Trainer {trainer} added successfully!')
+                messages.success(request, f'Trainer {trainer} added successfully!')     
             # Determine where to redirect back to
             referer = request.META.get('HTTP_REFERER', '')
             page = request.POST.get('page')
@@ -447,10 +467,12 @@ def add_group(request):
         
         # Check if group already exists (case-insensitive)
         if Group.objects.filter(name__iexact=group_name).exists():
-            return redirect(f'/manage_groups/?error=Group "{group_name}" already exists!')
+            messages.warning(request, f'Group "{group_name}" already exists!')
+            return redirect('manage_groups')
         
         if not group_name:
-            return redirect('/manage_groups/?error=Group name cannot be empty!')
+            messages.warning(request, 'Group name cannot be empty!')
+            return redirect('manage_groups')
         
         # Parse group_index, default to 0 if empty or invalid
         if group_index and group_index.isdigit():
@@ -469,7 +491,8 @@ def add_group(request):
         groups_per_page = 2
         last_page = (total_groups + groups_per_page - 1) // groups_per_page
         
-        return redirect(f'/manage_groups/?page={last_page}&success=Group "{group_name}" added successfully!')
+        messages.success(request, f'Group "{group_name}" added successfully!')
+        return redirect(f'/manage_groups/?page={last_page}')
     return redirect('/manage_groups/')
 
 def update_group_name(request, group_id):

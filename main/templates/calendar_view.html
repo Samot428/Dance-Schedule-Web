@@ -544,6 +544,21 @@
             border-bottom-color: rgba(234, 179, 8, 0.3);
         }
 
+        .btn-close {
+            background: rgba(239, 68, 68, 0.2);
+            border: none;
+            color: #fca5a5;
+            border-radius: 4px;
+            padding: 2px 6px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-close:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
         .assign-fields {
             display: flex;
             align-items: center;
@@ -894,7 +909,7 @@
         <div class="toast toast-{{ message.tags }}" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
                 <strong class="me-auto">{% if message.tags == 'success' %}✓ Success{% elif message.tags == 'warning' %}⚠ Warning{% else %}Info{% endif %}</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close">×</button>
             </div>
             <div class="toast-body">
                 {{ message }}
@@ -1147,7 +1162,11 @@
                                         {% csrf_token %}
                                         <input type="hidden" name="trainer_id" value="{{ trainer.id }}" />
                                         <span class="lesson-chip">
-                                            Lesson: {{ lesson.time_interval_start|time:'H:i' }} – {{ lesson.time_interval_end|time:'H:i' }}
+                                            Lesson(
+                                                {% for x in lesson.groups.all%}
+                                                {{ x.name }}
+                                                {% endfor %}
+                                            ): {{ lesson.time_interval_start|time:'H:i' }} – {{ lesson.time_interval_end|time:'H:i' }}
                                             <button class="btn-close" type="submit">×</button>
                                         </span>
                                     </form>
@@ -1179,6 +1198,8 @@
                                 <span class="small-label">Lesson Time:</span>
                                 <input type="time" name="start_time" placeholder="--:--" step="900"/>
                                 <input type="time" name="end_time" placeholder="--:--" step="900"/>
+                                <span class="small-label">Groups:</span>
+                                <input type="text" name="groups" placeholder="G1, G2, G3"/>
                             </div>
                             <button type="submit">Add Trainer</button>
                         </div>
@@ -1301,11 +1322,28 @@
             // Initialize toasts
             const toastElements = document.querySelectorAll('.toast');
             toastElements.forEach(toastEl => {
-                const toast = new bootstrap.Toast(toastEl, {
-                    autohide: true,
-                    delay: 2000
-                });
-                toast.show();
+                // Show the toast immediately
+                toastEl.style.display = 'block';
+                
+                // Get delay from data attribute or default to 4000ms
+                const delay = parseInt(toastEl.dataset.delay) || 4000;
+                
+                // Auto-hide after delay
+                setTimeout(() => {
+                    toastEl.style.opacity = '0';
+                    toastEl.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => toastEl.remove(), 300);
+                }, delay);
+                
+                // Make sure close button works
+                const closeBtn = toastEl.querySelector('.btn-close');
+                if (closeBtn && !closeBtn.onclick) {
+                    closeBtn.onclick = function() {
+                        toastEl.style.opacity = '0';
+                        toastEl.style.transition = 'opacity 0.3s ease';
+                        setTimeout(() => toastEl.remove(), 300);
+                    };
+                }
             });
 
             // Attach save listeners to time inputs

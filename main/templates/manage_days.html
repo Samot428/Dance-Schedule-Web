@@ -387,6 +387,28 @@
             gap: 8px;
         }
 
+        .form-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: #e4e4e7;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .form-select option {
+            background: #1a1a2e;
+            color: #e4e4e7;
+        }
+
         .btn-close {
             background: rgba(239, 68, 68, 0.2);
             border: none;
@@ -1298,11 +1320,28 @@
         document.addEventListener('DOMContentLoaded', function() {
             const toastElements = document.querySelectorAll('.toast');
             toastElements.forEach(toastEl => {
-                const toast = new bootstrap.Toast(toastEl, {
-                    autohide: true,
-                    delay: 2000  // Auto-hide after 2 seconds
-                });
-                toast.show();
+                // Show the toast immediately
+                toastEl.style.display = 'block';
+                
+                // Get delay from data attribute or default to 4000ms
+                const delay = parseInt(toastEl.dataset.delay) || 4000;
+                
+                // Auto-hide after delay
+                setTimeout(() => {
+                    toastEl.style.opacity = '0';
+                    toastEl.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => toastEl.remove(), 300);
+                }, delay);
+                
+                // Make sure close button works
+                const closeBtn = toastEl.querySelector('.btn-close');
+                if (closeBtn && !closeBtn.onclick) {
+                    closeBtn.onclick = function() {
+                        toastEl.style.opacity = '0';
+                        toastEl.style.transition = 'opacity 0.3s ease';
+                        setTimeout(() => toastEl.remove(), 300);
+                    };
+                }
             });
         });
     

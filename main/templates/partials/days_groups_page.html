@@ -80,9 +80,14 @@
                     {% csrf_token %}
                     <input type="hidden" name="trainer_id" value="{{ trainer.id }}" />
                     <span class="lesson-chip">
-                        Lesson: {{ lesson.time_interval_start|time:'H:i' }} – {{ lesson.time_interval_end|time:'H:i' }}
+                        Lesson(
+                            {% for x in lesson.groups.all%}
+                            {{ x.name }}
+                            {% endfor %}
+                        ): {{ lesson.time_interval_start|time:'H:i' }} – {{ lesson.time_interval_end|time:'H:i' }}
                         <button class="btn-close" type="submit">×</button>
                     </span>
+
                 </form>
                 {% endif %}
                 {% endfor %}
@@ -112,6 +117,7 @@
                 <label class="small-label">Group Lesson Time:</label>
                 <input type="time" name="start_time" step="900"/>
                 <input type="time" name="end_time" step="900"/>
+                <input type="text" name="groups" placeholder="G1, G2, G3"/>
             </div>
             <button type="submit">Add Trainer</button>
         </div>
